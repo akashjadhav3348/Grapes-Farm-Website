@@ -9,7 +9,7 @@ const phones = [
 export default function Visit() {
   return (
     <section className="container section visit-section" id="visit" aria-labelledby="visit-title" data-reveal>
-      <div className="visit">
+      <div className="visit glass">
         <div className="visit-info">
           <p className="kicker"><span aria-hidden="true" /><span lang="en">Visit &amp; Contact</span></p>
           <h2 id="visit-title">कुंभारीत भेटूया</h2>

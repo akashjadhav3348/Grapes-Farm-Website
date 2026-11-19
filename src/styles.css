@@ -24,7 +24,12 @@ button { color: inherit; font: inherit; cursor: pointer; }
 a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
 .container { width: min(calc(100% - 6rem), 1260px); margin-inline: auto; }
 .section { padding-block: clamp(4rem, 8vw, 8rem); }
-.glass { border: 1px solid var(--line); background: #fffffff2; backdrop-filter: blur(18px); }
+.glass {
+  border: 1px solid #ffffffdb;
+  background: linear-gradient(140deg, #ffffffd9, var(--glass-tint, #e9f7f36b));
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px #5a88701c, 0 12px 32px #305a4920;
+  backdrop-filter: blur(18px) saturate(135%);
+}
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip-link { position: fixed; z-index: 9; top: .75rem; left: .75rem; padding: .55rem .85rem; background: var(--paper); transform: translateY(-200%); }
 .skip-link:focus { transform: none; }
@@ -34,7 +39,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline
   isolation: isolate;
   overflow: hidden;
   padding-block: 1.3rem 2.7rem;
-  background: radial-gradient(ellipse at 88% 8%, #dff6ff 0%, transparent 64%), radial-gradient(ellipse at 6% 65%, #e4f9ee 0%, transparent 57%), #fff;
+  background: radial-gradient(ellipse at 88% 8%, #cceeff 0%, transparent 64%), radial-gradient(ellipse at 6% 65%, #d4f4e7 0%, transparent 57%), #fff;
 }
 .sky { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; transform: translate3d(0, var(--sky-offset, 0), 0); }
 .cloud {
@@ -56,7 +61,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline
 @keyframes cloud-drift { from { transform: translateX(-2vw); } to { transform: translateX(17vw); } }
 
 .header { position: relative; z-index: 2; }
-.masthead { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; min-height: 74px; padding: .65rem 1rem .65rem .85rem; border-radius: 20px; box-shadow: 0 10px 28px #284c3010; }
+.masthead { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; min-height: 74px; padding: .65rem 1rem .65rem .85rem; border-radius: 20px; }
 .brand { display: inline-flex; width: max-content; align-items: center; gap: .68rem; text-decoration: none; }
 .brand strong, .brand small { display: block; line-height: 1.16; }
 .brand strong { font-size: 1.08rem; font-weight: 850; letter-spacing: -.04em; }
@@ -102,7 +107,7 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
 @keyframes hero-enter { from { opacity: 0; transform: translateY(21px); } to { opacity: 1; transform: none; } }
 
 .hero-bottom { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.15rem; }
-.farm-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 700px); border-radius: 20px; box-shadow: 0 10px 28px #284c3010; }
+.farm-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 700px); border-radius: 20px; }
 .farm-stats div { display: flex; flex-direction: column-reverse; gap: .2rem; padding: .85rem 1.25rem; }
 .farm-stats div + div { border-left: 1px solid var(--line); }
 .farm-stats dt { color: var(--muted); font-size: .85rem; font-weight: 700; }
@@ -121,9 +126,9 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
 .variety-block ul { display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: .85rem 0 0; list-style: none; }
 .variety-block li { padding: .3rem .78rem; border-radius: 100px; background: #e7f7ef; font-size: .84rem; font-weight: 750; }
 
-.crop-section { background: #fff; }
+.crop-section { background: radial-gradient(ellipse at 14% 65%, #e1f7ee, transparent 56%), radial-gradient(ellipse at 90% 72%, #ede6fb, transparent 57%), #fff; }
 .crop-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; margin-top: 1.8rem; }
-.crop-card { overflow: hidden; border-radius: 22px; box-shadow: 0 11px 30px #25472b0b; transition: transform .25s ease, box-shadow .25s ease; }
+.crop-card { overflow: hidden; border-radius: 22px; transition: transform .25s ease, box-shadow .25s ease; }
 .crop-card:hover { transform: translateY(-5px); box-shadow: 0 18px 34px #25472b1a; }
 .crop-card figure { position: relative; }
 .crop-card img { aspect-ratio: 1.15; object-fit: cover; }
@@ -148,7 +153,8 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
 .video-tile video { aspect-ratio: 1.31; border-radius: 18px; background: var(--green); }
 .video-tile figcaption { margin-top: .35rem; color: var(--muted); font-size: .88rem; }
 
-.visit { display: grid; grid-template-columns: 1fr 1.12fr; gap: clamp(1.35rem, 4vw, 4rem); align-items: stretch; padding: clamp(1.3rem, 4.5vw, 3.6rem); border: 1px solid #cfe6dc; border-radius: 24px; background: #f4fbf8; }
+.visit { display: grid; grid-template-columns: 1fr 1.12fr; gap: clamp(1.35rem, 4vw, 4rem); align-items: stretch; padding: clamp(1.3rem, 4.5vw, 3.6rem); border-radius: 24px; --glass-tint: #d8f4ed9c; }
+.visit-section { background: radial-gradient(ellipse at 74% 48%, #dff3ff, transparent 72%); border-radius: 34px; }
 .visit h2 { margin-bottom: .55rem; }
 .visit address { margin-bottom: .5rem; font-style: normal; font-weight: 800; }
 .phone-links { display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: 1rem 0; list-style: none; }
@@ -233,7 +239,7 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
   .awaiting-reveal { opacity: 1; transform: none; }
 }
 
-.crop-card:nth-child(1) { background: #eaf9ef; border-color: #b9e0c9; }
-.crop-card:nth-child(2) { background: #fff7df; border-color: #ead9a7; }
-.crop-card:nth-child(3) { background: #fff0ec; border-color: #f0c9be; }
-.crop-card:nth-child(4) { background: #f5efff; border-color: #dbcbef; }
+.crop-card:nth-child(1) { --glass-tint: #bcefd5b8; }
+.crop-card:nth-child(2) { --glass-tint: #ffe8aeb8; }
+.crop-card:nth-child(3) { --glass-tint: #ffd9cdb8; }
+.crop-card:nth-child(4) { --glass-tint: #e2d2ffb8; }
