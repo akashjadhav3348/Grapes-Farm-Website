@@ -15,7 +15,7 @@ export const family = {
       name: 'Madhukar Nivrutti Jadhav',
       spouse: 'Sindubai Madhukar Jadhav',
       children: [
-        { name: 'Vikash Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer', spouse: 'Anuja Vikash Jadhav', children: [{ name: 'Aishwar Vikash Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
+        { name: 'Vikas Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer', spouse: 'Anuja Vikas Jadhav', children: [{ name: 'Aishwar Vikas Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
         { name: 'Sachin Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer · Farm Manager', spouse: 'Ashwini Sachin Jadhav', children: [{ name: 'Sanvi Sachin Jadhav', relation: 'मुलगी', avatar: 'girl' }, { name: 'Shiv Sachin Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
       ],
     },
@@ -32,7 +32,7 @@ export const family = {
       name: 'Sanjay Nivrutti Jadhav',
       spouse: 'Latabai Sanjay Jadhav',
       children: [
-        { name: 'Amol Sanjay Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Automobile Automation Engineer', status: 'अविवाहित' },
+        { name: 'Amol Sanjay Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Automotive Electrical & ECM Specialist', status: 'अविवाहित' },
         { name: 'Rutuja Sanjay Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
       ],
     },
