@@ -1,9 +1,9 @@
 .family {
-  --tree-line: #778980;
+  --tree-line: #627f72;
   --tree-gap: .75rem;
   --level-gap: 2.7rem;
-  background: #f3f0e8;
-  border-block: 1px solid #d9d4c8;
+  background: #fff;
+  border-block: 1px solid #e0eee8;
   color: #26362e;
 }
 .family .container { width: min(calc(100% - 4rem), 1400px); }
@@ -15,9 +15,9 @@
   gap: var(--level-gap) var(--tree-gap);
   margin-top: 2rem;
   padding: 1.35rem 1.15rem;
-  border: 1px solid #d6d4c9;
+  border: 1px solid #cfe3da;
   border-radius: 17px;
-  background: #faf8f2;
+  background: #fff;
 }
 .tree-level { grid-column: 1 / -1; position: relative; align-self: end; pointer-events: none; }
 .tree-level span { display: block; color: #506359; font-size: .85rem; font-weight: 800; }
@@ -73,10 +73,10 @@
 .tree-young { grid-row: 2; position: relative; display: grid; gap: .55rem; align-self: start; }
 .tree-young::before { height: var(--level-gap); }
 .tree-card { position: relative; border: 1px solid var(--card-border); border-radius: 9px; background: var(--card-surface); }
-.tree-first { --card-surface: #f4dfd4; --card-border: #bb8473; }
-.tree-second { --card-surface: #e6ecd9; --card-border: #a0af89; }
-.tree-third { --card-surface: #ebe6f2; --card-border: #b8a9cb; }
-.tree-fourth { --card-surface: #e2ede7; --card-border: #a0bcb0; }
+.tree-first { --card-surface: #fff0e7; --card-border: #d8a28d; }
+.tree-second { --card-surface: #e5f8ed; --card-border: #99c8b0; }
+.tree-third { --card-surface: #f3edff; --card-border: #bcaada; }
+.tree-fourth { --card-surface: #e8f6ff; --card-border: #9ebfda; }
 .tree-first, .tree-second { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .tree-person { display: flex; align-items: center; gap: .62rem; min-width: 0; padding: .7rem; }
 .tree-first .tree-person + .tree-person, .tree-second .tree-person + .tree-person { border-left: 1px solid var(--card-border); }
