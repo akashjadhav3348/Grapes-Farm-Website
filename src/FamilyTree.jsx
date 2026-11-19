@@ -9,7 +9,7 @@ function Person({ person }) {
     <div className="tree-person">
       <img src={asset(`family/${person.avatar}.jpg`)} alt="" width="160" height="160" loading="lazy" />
       <div>
-        <strong lang="en">{person.name}</strong>
+        <strong>{person.name}</strong>
         <span>{details}</span>
         {person.profession && <small lang="en">{person.profession}</small>}
       </div>

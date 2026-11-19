@@ -104,7 +104,7 @@ function Farm() {
       <div className="farm-copy">
         <Kicker><span lang="en">The Farm</span></Kicker>
         <h2 id="farm-title">कुंभारीतली आमची शेती</h2>
-        <p>एकूण १० एकरांपैकी ७ एकरांवर द्राक्षबाग आहे. उरलेल्या ३ एकरांत गहू, टोमॅटो आणि कांदा पिकवतो. शेतातील सर्व प्लॉट्सचं व्यवस्थापन <strong lang="en">Sachin Madhukar Jadhav</strong> पाहतात.</p>
+        <p>एकूण १० एकरांपैकी ७ एकरांवर द्राक्षबाग आहे. उरलेल्या ३ एकरांत गहू, टोमॅटो आणि कांदा पिकवतो. शेतातील सर्व प्लॉट्सचं व्यवस्थापन <strong>सचिन मधुकर जाधव</strong> पाहतात.</p>
         <div className="variety-block">
           <h3>द्राक्षांचे वाण <span lang="en">Grape Varieties</span></h3>
           <ul lang="en">{varieties.map((variety) => <li key={variety}>{variety}</li>)}</ul>

@@ -8,32 +8,32 @@ export const crops = [
 export const varieties = ['Thompson Seedless', 'RK', 'SSN', 'ARRA', 'Sahyadri Crimson'];
 
 export const family = {
-  owner: { name: 'Nivrutti Rakhamaji Jadhav', relation: 'कुटुंबप्रमुख व शेतमालक', avatar: 'elder-man' },
-  spouse: { name: 'Bhimabai Nivrutti Jadhav', relation: 'पत्नी', avatar: 'elder-woman' },
+  owner: { name: 'निवृत्ती रखमाजी जाधव', relation: 'कुटुंबप्रमुख व शेतमालक', avatar: 'elder-man' },
+  spouse: { name: 'भीमाबाई निवृत्ती जाधव', relation: 'पत्नी', avatar: 'elder-woman' },
   branches: [
     {
-      name: 'Madhukar Nivrutti Jadhav',
-      spouse: 'Sindubai Madhukar Jadhav',
+      name: 'मधुकर निवृत्ती जाधव',
+      spouse: 'सिंधुबाई मधुकर जाधव',
       children: [
-        { name: 'Vikas Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer', spouse: 'Anuja Vikas Jadhav', children: [{ name: 'Aishwar Vikas Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
-        { name: 'Sachin Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer · Farm Manager', spouse: 'Ashwini Sachin Jadhav', children: [{ name: 'Sanvi Sachin Jadhav', relation: 'मुलगी', avatar: 'girl' }, { name: 'Shiv Sachin Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
+        { name: 'विकास मधुकर जाधव', relation: 'मुलगा', avatar: 'man', profession: 'Farmer', spouse: 'अनुजा विकास जाधव', children: [{ name: 'ऐश्वर्य विकास जाधव', relation: 'मुलगा', avatar: 'boy' }] },
+        { name: 'सचिन मधुकर जाधव', relation: 'मुलगा', avatar: 'man', profession: 'Farmer · Farm Manager', spouse: 'अश्विनी सचिन जाधव', children: [{ name: 'सान्वी सचिन जाधव', relation: 'मुलगी', avatar: 'girl' }, { name: 'शिव सचिन जाधव', relation: 'मुलगा', avatar: 'boy' }] },
       ],
     },
     {
-      name: 'Dnyaneshwar Nivrutti Jadhav',
-      spouse: 'Meenabai Dnyaneshwar Jadhav',
+      name: 'ज्ञानेश्वर निवृत्ती जाधव',
+      spouse: 'मीनाबाई ज्ञानेश्वर जाधव',
       children: [
-        { name: 'Pooja Dnyaneshwar Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
-        { name: 'Archana Dnyaneshwar Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
-        { name: 'Akash Dnyaneshwar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Software Developer', status: 'अविवाहित' },
+        { name: 'पूजा ज्ञानेश्वर जाधव', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
+        { name: 'अर्चना ज्ञानेश्वर जाधव', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
+        { name: 'आकाश ज्ञानेश्वर जाधव', relation: 'मुलगा', avatar: 'man', profession: 'Software Developer', status: 'अविवाहित' },
       ],
     },
     {
-      name: 'Sanjay Nivrutti Jadhav',
-      spouse: 'Latabai Sanjay Jadhav',
+      name: 'संजय निवृत्ती जाधव',
+      spouse: 'लताबाई संजय जाधव',
       children: [
-        { name: 'Amol Sanjay Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Automotive Electrical & ECM Specialist', status: 'अविवाहित' },
-        { name: 'Rutuja Sanjay Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
+        { name: 'अमोल संजय जाधव', relation: 'मुलगा', avatar: 'man', profession: 'Automotive Electrical & ECM Specialist', status: 'अविवाहित' },
+        { name: 'ऋतुजा संजय जाधव', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
       ],
     },
   ],
