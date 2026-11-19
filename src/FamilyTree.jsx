@@ -41,22 +41,32 @@ function Descendant({ person, index }) {
   );
 }
 
-export default function FamilyTree() {
+export default function FamilyTree({ title, labels }) {
+  const rename = (person) => ({ ...person, name: labels[person.name]?.trim() || person.name });
+  const branches = family.branches.map((branch) => ({
+    ...rename(branch),
+    spouse: labels[branch.spouse]?.trim() || branch.spouse,
+    children: branch.children.map((person) => ({
+      ...rename(person),
+      spouse: labels[person.spouse]?.trim() || person.spouse,
+      children: person.children?.map(rename),
+    })),
+  }));
   return (
     <section className="section family" id="family" aria-labelledby="family-title">
       <div className="container" data-reveal>
         <p className="kicker"><span aria-hidden="true" /><span lang="en">Family Tree</span></p>
-        <h2 id="family-title">जाधव कुटुंबाचा वंशवृक्ष</h2>
+        <h2 id="family-title">{title}</h2>
         <p className="family-summary">निवृत्ती आणि भीमाबाई जाधव यांच्यापासून चौथ्या पिढीपर्यंत. चित्रांमध्ये प्रातिनिधिक avatars वापरले आहेत.</p>
         <div className="tree-chart">
           {generations.map((generation, index) => (
             <div className="tree-level" key={generation} style={{ gridRow: index + 1 }} aria-hidden="true"><span>{generation}</span></div>
           ))}
           <div className="tree-root">
-            <Couple person={family.owner} spouse={family.spouse} variant="tree-first" />
+            <Couple person={rename(family.owner)} spouse={rename(family.spouse)} variant="tree-first" />
           </div>
           <ul className="tree-branches" aria-label="निवृत्ती आणि भीमाबाई जाधव यांच्या कुटुंबाच्या शाखा">
-            {family.branches.map((branch) => (
+            {branches.map((branch) => (
               <li className="tree-branch" key={branch.name} style={{ '--branch-width': branch.children.length }}>
                 <div className="tree-parent">
                   <Couple

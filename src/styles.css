@@ -127,7 +127,6 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
 .variety-block li { padding: .3rem .78rem; border-radius: 100px; background: #e7f7ef; font-size: .84rem; font-weight: 750; }
 
 .crop-section { background: radial-gradient(ellipse at 14% 65%, #e1f7ee, transparent 56%), radial-gradient(ellipse at 90% 72%, #ede6fb, transparent 57%), #fff; }
-.crop-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; margin-top: 1.8rem; }
 .crop-card { overflow: hidden; border-radius: 22px; transition: transform .25s ease, box-shadow .25s ease; }
 .crop-card:hover { transform: translateY(-5px); box-shadow: 0 18px 34px #25472b1a; }
 .crop-card figure { position: relative; }
@@ -189,7 +188,6 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
   .container { width: calc(100% - 3.25rem); }
   .hero { gap: 1.75rem; }
   .hero h1 { font-size: clamp(4rem,9.75vw,6.6rem); }
-  .crop-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .crop-card img { aspect-ratio: 1.55; }
 }
 
@@ -222,7 +220,6 @@ nav a:hover, .quiet-link:hover, .footer a:hover { text-decoration: underline; te
 }
 
 @media (max-width: 365px) {
-  .crop-grid { grid-template-columns: minmax(0,1fr); }
   .brand { gap: .42rem; }
   .brand strong { font-size: 1rem; }
   .brand small { font-size: .72rem; }
