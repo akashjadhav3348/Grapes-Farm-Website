@@ -66,6 +66,7 @@ const sections = [
 
 export default function Admin({ content, onChange, ready }) {
   const [section, setSection] = useState('hero');
+  const [menuOpen, setMenuOpen] = useState(false);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const [folder, setFolder] = useState(null);
@@ -165,17 +166,59 @@ export default function Admin({ content, onChange, ready }) {
     farm: [['title', 'शीर्षक'], ['description', 'शेतीची माहिती']],
     visit: [['title', 'शीर्षक'], ['address', 'पत्ता'], ['description', 'भेटीची माहिती'], ['security', 'सुरक्षा माहिती']],
   };
+  const sectionTitle = sections.find(([id]) => id === section)[1];
+  const photoCount = content.gallery.reduce((total, entry) => total + entry.items.filter((item) => !item.video).length, 0);
+  const metrics = [
+    ['पिके', content.crops.length, 'bg-teal-100 text-teal-900'],
+    ['गॅलरी गट', content.gallery.length, 'bg-sky-100 text-sky-900'],
+    ['गॅलरी फोटो', photoCount, 'bg-violet-100 text-violet-900'],
+  ];
 
   return (
-    <section className="border-b border-emerald-900/10 bg-emerald-50/70 px-3 py-6 sm:px-6 sm:py-10" aria-labelledby="admin-title" id="dashboard">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-emerald-800">ऐश्वर्य फार्म्स</p>
-            <h1 id="admin-title" className="text-3xl font-bold sm:text-4xl">Landing Page Editor</h1>
+    <section className="border-b border-slate-200 bg-slate-50" aria-labelledby="admin-title" id="dashboard">
+      <div className="mx-auto grid max-w-[100rem] grid-cols-1 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:self-start lg:border-r lg:border-b-0 lg:px-5 lg:py-7">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-2xl bg-teal-800 text-lg font-bold text-white">ऐ</span>
+              <div>
+                <p className="text-sm font-extrabold text-slate-900">ऐश्वर्य फार्म्स</p>
+                <p className="text-xs text-slate-600">Site administration</p>
+              </div>
+            </div>
+            <button className={`${action} lg:hidden`} type="button" aria-expanded={menuOpen} aria-controls="admin-sections" onClick={() => setMenuOpen(!menuOpen)}>विभाग</button>
           </div>
-          <a className={action} href="#live-preview">Live preview</a>
+          <div id="admin-sections" role="navigation" className={`${menuOpen ? 'grid' : 'hidden'} mt-6 gap-1.5 lg:grid`} aria-label="एडिटरचे विभाग">
+            {sections.map(([id, label]) => (
+              <button key={id} aria-pressed={section === id} className={`min-h-11 w-full rounded-xl border-0 px-3 text-left text-sm font-bold ${section === id ? 'bg-teal-100 text-teal-950' : 'bg-white text-slate-700 hover:bg-slate-100'}`} type="button" onClick={() => {
+                setSection(id);
+                setMenuOpen(false);
+              }}>{label}</button>
+            ))}
+          </div>
+        </aside>
+        <div className="min-w-0 p-3 sm:p-6 lg:p-8">
+        <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-slate-600">Admin / {sectionTitle}</p>
+          <div className="flex flex-wrap gap-2">
+            <a className={action} href="./">मुख्य साइट</a>
+            <a className={action} href="#live-preview">Live preview</a>
+          </div>
         </header>
+        <div className="mb-5 rounded-3xl bg-linear-to-r from-[#123d39] to-[#265951] p-5 text-white sm:p-7">
+          <div>
+            <h1 id="admin-title" className="text-3xl font-bold tracking-tight sm:text-4xl">Landing Page Editor</h1>
+            <p className="mt-2 text-sm text-white/90">मजकूर आणि फोटो संपादित करा. बदल पेजच्या प्रिव्ह्यूमध्ये लगेच दिसतात.</p>
+          </div>
+        </div>
+        <dl className="mb-5 grid grid-cols-1 gap-2 min-[360px]:grid-cols-3 sm:gap-4">
+          {metrics.map(([label, value, tone]) => (
+            <div className="flex min-w-0 flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 sm:gap-3 sm:p-4" key={label}>
+              <dd className={`m-0 grid size-10 shrink-0 place-items-center rounded-xl text-lg font-bold ${tone}`}>{value}</dd>
+              <dt className="text-sm font-semibold text-slate-700">{label}</dt>
+            </div>
+          ))}
+        </dl>
         <fieldset disabled={!ready || busy} className="m-0 min-w-0 border-0 p-0 disabled:opacity-65">
           <div className={`${card} mb-4 flex flex-wrap gap-2`}>
             <button className={primary} type="button" onClick={save}>Save in browser</button>
@@ -185,13 +228,8 @@ export default function Admin({ content, onChange, ready }) {
             <p role="status" className="m-0 w-full text-sm text-emerald-950">{!ready ? 'एडिटर लोड होत आहे…' : status}</p>
             <p className="m-0 w-full text-sm text-emerald-950/80">फाइलमधले बदल वेबसाइटवर सर्वांना दाखवण्यासाठी content.json प्रोजेक्टच्या public फोल्डरमध्ये ठेवून साइट पुन्हा प्रकाशित करा.</p>
           </div>
-          <div className="grid gap-4 md:grid-cols-[11rem_minmax(0,1fr)]">
-            <div className={`${card} flex flex-wrap items-start gap-2 self-start md:grid`} aria-label="एडिटरचे विभाग">
-              {sections.map(([id, label]) => (
-                <button key={id} aria-pressed={section === id} className={section === id ? primary : action} type="button" onClick={() => setSection(id)}>{label}</button>
-              ))}
-            </div>
             <div className={`${card} grid min-w-0 gap-4`}>
+              <h2 className="text-xl font-bold text-slate-900">{sectionTitle}</h2>
               {fields[section]?.map(([key, label]) => (
                 <Field key={key} label={label} value={content[section][key]} multiline={key === 'description'} onChange={(value) => field(section, key, value)} />
               ))}
@@ -269,12 +307,12 @@ export default function Admin({ content, onChange, ready }) {
                 </>}
               </>}
             </div>
-          </div>
         </fieldset>
         <button className={`${action} mt-4`} type="button" disabled={!ready || busy} onClick={() => {
           onChange(initialContent);
           setStatus('मूळ मजकूर प्रिव्ह्यूमध्ये आला. तो ठेवण्यासाठी Save करा.');
         }}>मूळ मजकूर प्रिव्ह्यू करा</button>
+        </div>
       </div>
     </section>
   );
