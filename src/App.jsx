@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { asset, crops, family, varieties } from './data.js';
+import { asset, crops, varieties } from './data.js';
 import Gallery from './Gallery.jsx';
+import FamilyTree from './FamilyTree.jsx';
+import Visit from './Visit.jsx';
 
-const directions = 'https://www.google.com/maps/search/?api=1&query=Aishwary+Farms%2C+Kumbhari%2C+Maharashtra';
 
 function Kicker({ children }) {
   return <p className="kicker"><span aria-hidden="true" />{children}</p>;
@@ -67,7 +68,7 @@ function Hero() {
       <Header />
       <section className="container hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <Kicker>कुंभारी, महाराष्ट्र</Kicker>
+          <Kicker>ऐश्वर्य फार्म्स · कुंभारी, महाराष्ट्र</Kicker>
           <h1 id="hero-title" lang="en">Rooted in <em>Kumbhari.</em></h1>
           <p>कुंभारीतली जाधव कुटुंबाची १० एकर शेती. आमच्या द्राक्षबागेची, इतर पिकांची आणि शेती सांभाळणाऱ्या कुटुंबाची ओळख.</p>
           <div className="actions">
@@ -103,7 +104,7 @@ function Farm() {
       <div className="farm-copy">
         <Kicker><span lang="en">The Farm</span></Kicker>
         <h2 id="farm-title">कुंभारीतली आमची शेती</h2>
-        <p>एकूण १० एकरांपैकी ७ एकरांवर द्राक्षबाग आहे. उरलेल्या ३ एकरांत गहू, टोमॅटो आणि कांदा पिकवतो. शेतातील सर्व प्लॉट्सचं व्यवस्थापन <strong lang="en">Sachin Jadhav</strong> पाहतात.</p>
+        <p>एकूण १० एकरांपैकी ७ एकरांवर द्राक्षबाग आहे. उरलेल्या ३ एकरांत गहू, टोमॅटो आणि कांदा पिकवतो. शेतातील सर्व प्लॉट्सचं व्यवस्थापन <strong lang="en">Sachin Madhukar Jadhav</strong> पाहतात.</p>
         <div className="variety-block">
           <h3>द्राक्षांचे वाण <span lang="en">Grape Varieties</span></h3>
           <ul lang="en">{varieties.map((variety) => <li key={variety}>{variety}</li>)}</ul>
@@ -139,68 +140,11 @@ function Crops() {
   );
 }
 
-function Family() {
-  return (
-    <section className="section family" id="family" aria-labelledby="family-title">
-      <div className="container" data-reveal>
-        <Kicker><span lang="en">Family Tree</span></Kicker>
-        <h2 id="family-title">जाधव कुटुंब</h2>
-        <div className="family-root glass">
-          <p className="small-caps">कुटुंबप्रमुख व शेतमालक</p>
-          <h3 lang="en">{family.owner}</h3>
-          <p lang="en">{family.spouse}</p>
-        </div>
-        <ul className="family-branches">
-          {family.branches.map((branch) => (
-            <li className="branch glass" key={branch.name}>
-              <h3 lang="en">{branch.name}</h3>
-              <p className="branch-spouse" lang="en">{branch.spouse}</p>
-              <ul className="branch-children" aria-label="मुलं">
-                {branch.children.map((person) => (
-                  <li className="person" key={person.name}>
-                    <h4 lang="en">{person.name}</h4>
-                    {person.profession && <p className="profession" lang="en">{person.profession}</p>}
-                    {person.spouse && <p className="person-meta">पत्नी <span lang="en">{person.spouse}</span></p>}
-                    {person.status && <p className="person-meta">{person.status}</p>}
-                    {person.children && (
-                      <ul className="next-generation" aria-label="पुढची पिढी">
-                        {person.children.map(({ name, relation }) => (
-                          <li key={name}><span lang="en">{name}</span><small>{relation}</small></li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-function Visit() {
-  return (
-    <section className="container section" id="visit" aria-labelledby="visit-title" data-reveal>
-      <div className="visit glass">
-        <div>
-          <Kicker><span lang="en">Find Us</span></Kicker>
-          <h2 id="visit-title">कुंभारीत भेटूया</h2>
-          <address>Aishwary Farms · कुंभारी, महाराष्ट्र</address>
-          <p>शेताला भेट देण्यापूर्वी किंवा पिकांच्या उपलब्धतेसाठी फोन करा.</p>
-        </div>
-        <div className="actions">
-          <a className="pill primary" href="tel:+917218794501">फोन करा <span lang="en">072187 94501</span></a>
-          <a className="quiet-link" href={directions}>Maps वर शोधा <span aria-hidden="true">↗</span></a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function App() {
   useEffect(() => {
+    const sectionId = window.location.hash.slice(1);
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'instant' });
+
     if (!window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
@@ -229,7 +173,7 @@ export default function App() {
         <Farm />
         <Crops />
         <Gallery />
-        <Family />
+        <FamilyTree />
         <Visit />
       </main>
       <footer className="container footer">

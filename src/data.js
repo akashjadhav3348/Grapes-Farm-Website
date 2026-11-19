@@ -8,32 +8,32 @@ export const crops = [
 export const varieties = ['Thompson Seedless', 'RK', 'SSN', 'ARRA', 'Sahyadri Crimson'];
 
 export const family = {
-  owner: 'Nivrutti Rakhamaji Jadhav',
-  spouse: 'Bhimabai Nivrutti Jadhav',
+  owner: { name: 'Nivrutti Rakhamaji Jadhav', relation: 'कुटुंबप्रमुख व शेतमालक', avatar: 'elder-man' },
+  spouse: { name: 'Bhimabai Nivrutti Jadhav', relation: 'पत्नी', avatar: 'elder-woman' },
   branches: [
     {
       name: 'Madhukar Nivrutti Jadhav',
-      spouse: 'Sindubai',
+      spouse: 'Sindubai Madhukar Jadhav',
       children: [
-        { name: 'Vikash Jadhav', profession: 'Farmer', spouse: 'Anuja Jadhav', children: [{ name: 'Aishwar Jadhav', relation: 'मुलगा' }] },
-        { name: 'Sachin Jadhav', profession: 'Farmer · Farm Manager', spouse: 'Ashwini', children: [{ name: 'Sanvi Jadhav', relation: 'मुलगी' }, { name: 'Shiv Jadhav', relation: 'मुलगा' }] },
+        { name: 'Vikash Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer', spouse: 'Anuja Vikash Jadhav', children: [{ name: 'Aishwar Vikash Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
+        { name: 'Sachin Madhukar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Farmer · Farm Manager', spouse: 'Ashwini Sachin Jadhav', children: [{ name: 'Sanvi Sachin Jadhav', relation: 'मुलगी', avatar: 'girl' }, { name: 'Shiv Sachin Jadhav', relation: 'मुलगा', avatar: 'boy' }] },
       ],
     },
     {
       name: 'Dnyaneshwar Nivrutti Jadhav',
-      spouse: 'Meenabai',
+      spouse: 'Meenabai Dnyaneshwar Jadhav',
       children: [
-        { name: 'Pooja Jadhav', status: 'विवाहित' },
-        { name: 'Archana', status: 'विवाहित' },
-        { name: 'Akash', profession: 'Software Developer', status: 'अविवाहित' },
+        { name: 'Pooja Dnyaneshwar Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
+        { name: 'Archana Dnyaneshwar Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
+        { name: 'Akash Dnyaneshwar Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Software Developer', status: 'अविवाहित' },
       ],
     },
     {
       name: 'Sanjay Nivrutti Jadhav',
-      spouse: 'Latabai',
+      spouse: 'Latabai Sanjay Jadhav',
       children: [
-        { name: 'Amol', profession: 'Automobile Automation Engineer', status: 'अविवाहित' },
-        { name: 'Rutuja', status: 'विवाहित' },
+        { name: 'Amol Sanjay Jadhav', relation: 'मुलगा', avatar: 'man', profession: 'Automobile Automation Engineer', status: 'अविवाहित' },
+        { name: 'Rutuja Sanjay Jadhav', relation: 'मुलगी', avatar: 'woman', status: 'विवाहित' },
       ],
     },
   ],
