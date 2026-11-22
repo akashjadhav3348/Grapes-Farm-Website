@@ -1,2 +1,6 @@
 node_modules/
+test-results/
+playwright-report/
 .npm-cache/
+.netlify/family-*.json
+.netlify/family-*.json.*.tmp

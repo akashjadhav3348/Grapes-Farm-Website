@@ -1,0 +1,299 @@
+/* =========================================================
+   Login screen — auth-theme.css
+   ========================================================= */
+
+/* CHANGE #1 — shared tokens (merge with the dashboard :root) */
+:root {
+  --brand:        #2563eb;
+  --brand-dark:   #1d4ed8;
+  --brand-soft:   #eff6ff;
+  --accent:       #16a34a;
+  --accent-soft:  #f0fdf4;
+  --coral:        #f59e0b;
+  --ink:          #17365d;
+  --muted:        #64748b;
+  --muted-2:      #94a3b8;
+  --bg:           #f5f7fb;
+  --panel:        #ffffff;
+  --border:       #e2e8f0;
+  --danger:       #b91c1c;
+  --warn-bg:      #fff8df;
+  --warn-ink:     #765511;
+  --shadow-card:  0 20px 60px rgba(41, 54, 82, .07);
+}
+
+/* ============ Shell ============ */
+.login-screen {
+  display: grid;
+  min-height: 100vh;          /* CHANGE #2 — fallback for older browsers */
+  min-height: 100dvh;
+  grid-template-rows: auto 1fr;
+  padding: clamp(20px, 4vw, 48px) clamp(20px, 6vw, 84px);
+  background:
+    radial-gradient(ellipse at 12% 12%, var(--accent-soft) 0, transparent 34%),
+    radial-gradient(ellipse at 88% 82%, var(--brand-soft)  0, transparent 38%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "DM Sans", "Nirmala UI", "Noto Sans Devanagari", Mangal, system-ui, sans-serif;
+  overflow-x: hidden;          /* CHANGE #3 — card shadow can overflow */
+}
+
+/* ============ Brand ============ */
+.login-brand {
+  display: inline-grid;
+  width: fit-content;
+  grid-template-columns: 42px auto;
+  align-items: center;
+  gap: 0 11px;
+  color: #26334c;
+  text-decoration: none;
+  border-radius: 12px;         /* makes the focus ring nicer */
+}
+.login-brand > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 19px;
+  font-weight: 850;
+}
+.login-brand strong { align-self: end; font-size: 15px; line-height: 1.2; }
+.login-brand small {
+  align-self: start;
+  color: var(--muted);         /* CHANGE #4 — was #7a8497 (contrast) */
+  font-size: 10px;             /* CHANGE #5 — was 9px */
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+/* ============ Layout ============ */
+.login-layout {
+  display: grid;
+  width: min(1050px, 100%);
+  grid-template-columns: 1.08fr .92fr;
+  align-items: center;
+  gap: clamp(30px, 7vw, 90px);
+  justify-self: center;
+  padding-block: 35px;
+}
+
+/* ============ Intro column ============ */
+.login-intro { max-width: 500px; }
+.login-eyebrow {
+  color: #5368bf;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.login-intro h1 {
+  margin: 15px 0 18px;
+  color: var(--ink);
+  font-size: clamp(48px, 7vw, 82px);
+  font-weight: 750;
+  letter-spacing: -.06em;
+  line-height: 1.02;
+}
+.login-intro h1 em { color: var(--brand); font-style: normal; }
+.login-intro > p:not(.login-eyebrow) {
+  max-width: 390px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.login-generation-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 37px;
+  color: #53617b;
+  font-size: 13px;
+  font-weight: 750;
+}
+.login-generation-note span:first-child {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+
+/* ============ Card ============ */
+.login-card {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  justify-self: end;
+  padding: clamp(26px, 4vw, 42px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+}
+.login-card-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 20px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 20px;
+}
+.login-card h2 {
+  margin: 6px 0 8px;
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -.04em;
+}
+.login-subtitle { color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+/* ============ Form ============ */
+.login-form { display: grid; gap: 17px; margin-top: 26px; }
+.login-form label {
+  display: grid;
+  gap: 7px;
+  color: #455169;
+  font-size: 13px;
+  font-weight: 750;
+}
+.login-form input {
+  width: 100%;
+  min-height: 47px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  transition: border-color .15s, box-shadow .15s;
+}
+/* CHANGE #6 — single, visible focus treatment */
+.login-form input:focus,
+.login-form input:focus-visible {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, .2);
+  outline: none;
+}
+
+.login-form button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  transition: background .15s;
+}
+.login-form button:hover { background: var(--brand-dark); }
+.login-form button:active { background: #312e81; }
+.login-form button:disabled { cursor: wait; opacity: .7; }
+/* CHANGE #7 — keyboard focus ring */
+.login-form button:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+.login-form button span { font-size: 20px; }
+.login-form button > span:first-child { white-space: nowrap; }
+
+/* ============ Status messages ============ */
+.login-status,
+.login-setup,
+.login-error {
+  margin-top: 20px;
+  font-size: 13px;
+}
+.login-setup {
+  padding: 12px;
+  border-radius: 9px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+.login-error { color: var(--danger); }   /* CHANGE #8 — stronger red, matches error semantics */
+
+.login-retry {                            /* CHANGE #9 — button used by the updated AdminAccess */
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0 0 0 4px;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.login-retry:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ============ Home link ============ */
+.login-home-link {
+  display: inline-block;
+  margin-top: 23px;
+  color: #56689f;
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+}
+.login-home-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* CHANGE #10 — visible focus */
+.login-home-link:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* CHANGE #11 — visible focus on the brand */
+.login-brand:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 760px) {
+  .login-screen { padding-inline: 20px; }
+  .login-layout {
+    grid-template-columns: 1fr;
+    gap: 26px;
+    justify-items: center;
+    padding-top: 32px;
+  }
+  .login-intro { max-width: 430px; text-align: center; }
+  .login-intro h1 { font-size: clamp(42px, 12vw, 64px); }
+  .login-intro > p:not(.login-eyebrow) { margin-inline: auto; font-size: 14px; }
+  .login-generation-note { justify-content: center; margin-top: 18px; }
+  .login-card { justify-self: center; }
+}
+
+/* CHANGE #12 — small phones: keep the arrow off its own line */
+@media (max-width: 380px) {
+  .login-form button span { font-size: 16px; }
+}
+
+/* CHANGE #13 — short viewports: keep the card above the fold */
+@media (max-height: 640px) {
+  .login-intro h1 { font-size: clamp(36px, 9vw, 56px); }
+  .login-generation-note { margin-top: 18px; }
+  .login-card { padding: 24px; }
+}
+
+/* CHANGE #14 — reduced motion: only disable transitions that exist */
+@media (prefers-reduced-motion: reduce) {
+  .login-form input,
+  .login-form button { transition: none; }
+}

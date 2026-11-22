@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:family": "node --test tests/family-store.test.mjs"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.9",
+    "bootstrap": "^5.3.9",
+    "bootstrap-icons": "^1.13.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.3.5",
     "@vitejs/plugin-react": "^6.0.0",
     "tailwindcss": "^4.3.5",

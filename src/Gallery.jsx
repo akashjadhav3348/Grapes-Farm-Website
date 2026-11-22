@@ -4,34 +4,49 @@ import { photoSource } from './content.js';
 const initialPhotoCount = 6;
 
 export default function Gallery({ title, description, groups }) {
-  const [active, setActive] = useState('gallery-2');
+  /* CHANGE #1 — default to the first group, not a hard-coded id */
+  const [active, setActive] = useState(() => groups[0]?.id ?? '');
   const [expanded, setExpanded] = useState(false);
   const [selected, setSelected] = useState(null);
   const dialog = useRef(null);
   const grid = useRef(null);
   const showNextPhoto = useRef(false);
+
   const group = groups.find((entry) => entry.id === active) ?? groups[0];
   const items = group?.items ?? [];
   const photos = items.filter((item) => !item.video);
-  const selectedIndex = photos.findIndex((photo) => photo.id === selected);
-  const selectedPhoto = photos[selectedIndex];
-  const visible = expanded ? items : items.slice(0, initialPhotoCount);
-  const label = (item, index) => item.caption || `${group.description || group.label} (${index + 1}/${items.length})`;
 
+  const selectedIndex = photos.findIndex((photo) => photo.id === selected);
+  const selectedPhoto = selectedIndex >= 0 ? photos[selectedIndex] : null;
+
+  const visible = expanded ? items : items.slice(0, initialPhotoCount);
+  const label = (item, index) =>
+    item.caption || `${group?.description || group?.label || 'Gallery'} (${index + 1}/${items.length})`;
+
+  /* CHANGE #2 — null-safe dialog control */
   useEffect(() => {
-    if (selectedPhoto && !dialog.current.open) dialog.current.showModal();
-    if (!selectedPhoto && dialog.current.open) dialog.current.close();
+    const element = dialog.current;
+    if (!element) return;
+    if (selectedPhoto && !element.open) element.showModal();
+    if (!selectedPhoto && element.open) element.close();
   }, [selectedPhoto]);
 
   useEffect(() => {
     if (expanded && showNextPhoto.current) {
-      grid.current.children[initialPhotoCount]?.focus();
+      grid.current?.children[initialPhotoCount]?.focus();
       showNextPhoto.current = false;
     }
   }, [expanded]);
 
+  /* CHANGE #3 — bail out if nothing is selected */
   function stepPhoto(step) {
-    if (photos.length) setSelected(photos[(selectedIndex + step + photos.length) % photos.length].id);
+    if (!selectedPhoto || photos.length < 2) return;
+    setSelected(photos[(selectedIndex + step + photos.length) % photos.length].id);
+  }
+
+  function closeViewer() {
+    dialog.current?.close();
+    setSelected(null);
   }
 
   return (
@@ -43,53 +58,121 @@ export default function Gallery({ title, description, groups }) {
         </div>
         <p>{description}</p>
       </div>
+
       <div className="gallery-controls" role="group" aria-label="फोटो आणि व्हिडिओचे गट">
         {groups.map((entry) => (
-          <button className="pill" key={entry.id} type="button" aria-controls="gallery-items" aria-pressed={entry.id === group?.id} onClick={() => {
-            setActive(entry.id);
-            setExpanded(false);
-            setSelected(null);
-          }}>{entry.label}</button>
+          <button
+            className="pill"
+            key={entry.id}
+            type="button"
+            aria-controls="gallery-items"
+            aria-pressed={entry.id === group?.id}
+            onClick={() => {
+              /* CHANGE #4 — don't collapse the grid when re-clicking the active group */
+              if (entry.id === active) return;
+              setActive(entry.id);
+              setExpanded(false);
+              setSelected(null);
+            }}
+          >
+            {entry.label}
+          </button>
         ))}
       </div>
+
       <div className="gallery-grid" id="gallery-items" key={group?.id} ref={grid}>
         {visible.map((item, index) => item.video ? (
           <figure className="video-tile" key={item.id}>
-            <video src={photoSource(item.src)} controls playsInline preload="metadata" aria-label={label(item, index)} />
+            {/* CHANGE #5 — poster from thumb, no redundant aria-label (figcaption names it) */}
+            <video
+              src={photoSource(item.src)}
+              poster={item.thumb ? photoSource(item.thumb) : undefined}
+              controls
+              playsInline
+              preload="metadata"
+            />
             <figcaption>{label(item, index)}</figcaption>
           </figure>
         ) : (
-          <button className="photo-tile" key={item.id} type="button" onClick={() => setSelected(item.id)}>
-            <img src={photoSource(item.thumb || item.src)} alt={label(item, index)} loading="lazy" decoding="async" />
+          <button
+            className="photo-tile"
+            key={item.id}
+            type="button"
+            onClick={() => setSelected(item.id)}
+            aria-label={label(item, index)}
+          >
+            <img
+              src={photoSource(item.thumb || item.src)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
             <span aria-hidden="true">↗</span>
           </button>
         ))}
       </div>
+
       {!items.length && <p>या गटात अजून फोटो किंवा व्हिडिओ नाहीत.</p>}
+
       {items.length > initialPhotoCount && (
-        <button className="pill gallery-more" type="button" aria-controls="gallery-items" aria-expanded={expanded} onClick={() => {
-          showNextPhoto.current = !expanded;
-          setExpanded(!expanded);
-        }}>{expanded ? 'कमी फोटो दाखवा' : `सर्व ${items.length} पाहा`}</button>
+        <button
+          className="pill gallery-more"
+          type="button"
+          aria-controls="gallery-items"
+          aria-expanded={expanded}
+          onClick={() => {
+            showNextPhoto.current = !expanded;
+            setExpanded(!expanded);
+          }}
+        >
+          {expanded ? 'कमी फोटो दाखवा' : `सर्व ${items.length} पाहा`}
+        </button>
       )}
-      {group && <p className="sr-only" role="status">{group.label} · {visible.length}/{items.length}</p>}
-      <dialog ref={dialog} className="viewer" aria-labelledby="viewer-caption" onClose={() => setSelected(null)} onClick={(event) => {
-        if (event.target === dialog.current) dialog.current.close();
-      }} onKeyDown={(event) => {
-        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-          event.preventDefault();
-          stepPhoto(event.key === 'ArrowLeft' ? -1 : 1);
-        }
-      }}>
+
+      {group && (
+        <p className="sr-only" role="status">
+          {group.label} · {visible.length}/{items.length}
+        </p>
+      )}
+
+      <dialog
+        ref={dialog}
+        className="viewer"
+        aria-labelledby="viewer-caption"
+        onClose={() => setSelected(null)}
+        onClick={(event) => {
+          if (event.target === dialog.current) closeViewer();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowLeft') { event.preventDefault(); stepPhoto(-1); }
+          else if (event.key === 'ArrowRight') { event.preventDefault(); stepPhoto(1); }
+          else if (event.key === 'Home') { event.preventDefault(); if (photos[0]) setSelected(photos[0].id); }
+          else if (event.key === 'End') { event.preventDefault(); if (photos.length) setSelected(photos[photos.length - 1].id); }
+        }}
+      >
         {selectedPhoto && (
           <div className="viewer-inner">
-            <button className="viewer-close" type="button" aria-label="फोटो बंद करा" autoFocus onClick={() => dialog.current.close()}>×</button>
-            <button type="button" aria-label="मागचा फोटो" onClick={() => stepPhoto(-1)}>‹</button>
+            <button className="viewer-close" type="button" aria-label="फोटो बंद करा" onClick={closeViewer}>×</button>
+
+            {/* CHANGE #6 — hide navigation when there's only one photo */}
+            {photos.length > 1 && (
+              <button type="button" aria-label="मागचा फोटो" onClick={() => stepPhoto(-1)}>‹</button>
+            )}
+
             <figure>
-              <img src={photoSource(selectedPhoto.src)} alt={selectedPhoto.caption || group.description} />
-              <figcaption id="viewer-caption" aria-live="polite">{label(selectedPhoto, items.indexOf(selectedPhoto))}</figcaption>
+              <img
+                src={photoSource(selectedPhoto.src)}
+                alt={selectedPhoto.caption || group?.description || ''}
+              />
+              {/* CHANGE #7 — number relative to photos, not all items */}
+              <figcaption id="viewer-caption" aria-live="polite">
+                {label(selectedPhoto, photos.indexOf(selectedPhoto))}
+              </figcaption>
             </figure>
-            <button type="button" aria-label="पुढचा फोटो" onClick={() => stepPhoto(1)}>›</button>
+
+            {photos.length > 1 && (
+              <button type="button" aria-label="पुढचा फोटो" onClick={() => stepPhoto(1)}>›</button>
+            )}
           </div>
         )}
       </dialog>

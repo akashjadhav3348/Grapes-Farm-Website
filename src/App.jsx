@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import Admin from './Admin.jsx';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import AdminAccess from './AdminAccess.jsx';
 import { browserChannel, browserContent, initialContent, parseContent, photoSource, readPublishedContent } from './content.js';
 import Gallery from './Gallery.jsx';
 import FamilyTree from './FamilyTree.jsx';
 import Visit from './Visit.jsx';
+import './landing.css';
 
+/* CHANGE #1 — one place to decide what counts as the admin surface */
+function isAdminPath(pathname = window.location.pathname, search = window.location.search) {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (path === '/login' || path === '/admin' || path.startsWith('/admin/')) return true;
+  return new URLSearchParams(search).get('admin') === '1';
+}
 
 function Kicker({ children }) {
   return <p className="kicker"><span aria-hidden="true" />{children}</p>;
@@ -30,7 +37,10 @@ function Header() {
           <a href="#gallery">Gallery</a>
           <a href="#family">Family</a>
         </nav>
-        <a className="pill nav-visit" href="#visit" lang="en">Find us <span aria-hidden="true">↗</span></a>
+        <div className="nav-visit flex flex-wrap justify-end gap-2" lang="en">
+          <a className="pill" href="#visit">Find us <span aria-hidden="true">↗</span></a>
+          <a className="pill primary" href="/login">Login</a>
+        </div>
       </div>
     </header>
   );
@@ -42,6 +52,7 @@ function Hero({ content }) {
 
   useEffect(() => {
     const element = sky.current;
+    if (!element) return;
     if (paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let frame;
     function update() {
@@ -78,7 +89,11 @@ function Hero({ content }) {
           </div>
         </div>
         <figure className="hero-art">
-          <img src={photoSource(content.image)} alt={content.caption} fetchPriority="high" />
+          <img
+            src={photoSource(content.image)}
+            alt={content.caption}
+            fetchPriority="high"   /* CHANGE #2 — if React < 18.3 warns, use fetchpriority="high" */
+          />
           <figcaption className="glass"><span aria-hidden="true">●</span> {content.caption}</figcaption>
         </figure>
       </section>
@@ -100,7 +115,7 @@ function Farm({ content }) {
   return (
     <section className="container section farm" id="farm" aria-labelledby="farm-title" data-reveal>
       <figure className="farm-photo">
-        <img src={photoSource(content.image)} alt="ऐश्वर्य फार्म्स" loading="lazy" />
+        <img src={photoSource(content.image)} alt={content.alt ?? 'ऐश्वर्य फार्म्स'} loading="lazy" />
       </figure>
       <div className="farm-copy">
         <Kicker><span lang="en">The Farm</span></Kicker>
@@ -108,7 +123,9 @@ function Farm({ content }) {
         <p>{content.description}</p>
         <div className="variety-block">
           <h3>द्राक्षांचे वाण <span lang="en">Grape Varieties</span></h3>
-          <ul lang="en">{content.varieties.filter(Boolean).map((variety, index) => <li key={index}>{variety}</li>)}</ul>
+          <ul lang="en">
+            {content.varieties.filter(Boolean).map((variety, index) => <li key={index}>{variety}</li>)}
+          </ul>
         </div>
       </div>
     </section>
@@ -116,13 +133,15 @@ function Farm({ content }) {
 }
 
 function Crops({ title, crops }) {
+  /* CHANGE #3 — ignore empty/undefined crop entries instead of crashing on crop.id */
+  const visible = crops.filter(Boolean);
   return (
     <section className="crop-section section" id="crops" aria-labelledby="crop-title">
       <div className="container" data-reveal>
         <Kicker><span lang="en">Our Crops</span></Kicker>
         <h2 id="crop-title">{title}</h2>
         <div className="mt-7 grid grid-cols-1 gap-4 min-[366px]:grid-cols-2 min-[1001px]:grid-cols-4">
-          {crops.map((crop) => (
+          {visible.map((crop) => (
             <article className="crop-card glass" key={crop.id}>
               <figure>
                 <img src={photoSource(crop.photo)} alt={crop.alt} loading="lazy" />
@@ -142,32 +161,57 @@ function Crops({ title, crops }) {
 }
 
 export default function App() {
-  const admin = new URLSearchParams(window.location.search).get('admin') === '1';
+  /* CHANGE #4 — admin comes from state so back/forward updates the shell */
+  const [admin, setAdmin] = useState(() => isAdminPath());
+
   const [content, setContent] = useState(initialContent);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    function sync() { setAdmin(isAdminPath()); }
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+
+  useEffect(() => {
     let active = true;
+    const controller = new AbortController();          // CHANGE #5 — abortable loads
+
     async function load() {
-      const local = await browserContent().then((value) => value && parseContent(value)).catch(() => null);
-      const next = local ?? await readPublishedContent().catch(() => null);
+      const local = await browserContent()
+        .then((value) => value && parseContent(value))
+        .catch((err) => {
+          console.warn('[App] Local content is corrupt; falling back.', err);
+          return null;
+        });
+      const next = local ?? await readPublishedContent({ signal: controller.signal })
+        .catch((err) => {
+          if (err.name !== 'AbortError') console.warn('[App] Could not load published content.', err);
+          return null;
+        });
       if (active) {
         setContent(next ?? initialContent);
         setReady(true);
       }
     }
+
     const channel = 'BroadcastChannel' in window ? new BroadcastChannel(browserChannel) : null;
     if (channel && !admin) channel.onmessage = load;
     void load();
     return () => {
       active = false;
+      controller.abort();
       channel?.close();
     };
   }, [admin]);
 
   useEffect(() => {
+    if (admin) return;
     const sectionId = window.location.hash.slice(1);
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'instant' });
+    if (sectionId) {
+      /* CHANGE #6 — 'auto' is more widely supported than 'instant' */
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'auto' });
+    }
 
     if (!window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const observer = new IntersectionObserver((entries) => {
@@ -176,7 +220,8 @@ export default function App() {
         entry.target.classList.remove('awaiting-reveal');
         observer.unobserve(entry.target);
       }
-    }, { rootMargin: '0px 0px 8% 0px' });
+    }, { rootMargin: '0px 0px 8% 0px', threshold: 0.1 });
+
     const sections = document.querySelectorAll('[data-reveal]');
     for (const section of sections) {
       if (section.getBoundingClientRect().top < window.innerHeight) continue;
@@ -187,13 +232,18 @@ export default function App() {
       observer.disconnect();
       sections.forEach((section) => section.classList.remove('awaiting-reveal'));
     };
-  }, []);
+  }, [admin, ready]);   // CHANGE #7 — re-run after content is ready so late sections are observed
+
+  const adminView = useMemo(
+    () => <AdminAccess content={content} onChange={setContent} ready={ready} />,
+    [content, ready]
+  );
+
+  if (admin) return adminView;
 
   return (
-    <>
+    <div className="public-site" id="top">
       <a className="skip-link" href="#main">मुख्य मजकुराकडे जा</a>
-      {admin && <Admin content={content} onChange={setContent} ready={ready} />}
-      <div id="live-preview">
       <Hero content={content.hero} />
       <main id="main">
         <Farm content={content.farm} />
@@ -204,9 +254,8 @@ export default function App() {
       </main>
       <footer className="container footer">
         <p lang="en">© 2026 Aishwary Farms</p>
-        <a href={admin ? "./" : "?admin=1"}>{admin ? "मुख्य साइट" : "Admin"}</a>
+        <a href="#top">वर जा <span aria-hidden="true">↑</span></a>
       </footer>
-      </div>
-    </>
+    </div>
   );
 }
