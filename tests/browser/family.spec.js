@@ -18,6 +18,7 @@ test('desktop acceptance: sign in, parents, duplicate names, details, persistent
   await login(page);
   await page.goto('/admin/family-tree');
   await add(page,'Suresh Jadhav','male');
+  await expect(page.locator('.swal2-container.swal2-top-end')).toContainText('Family member added');
   await add(page,'Sunita Jadhav','female');
   await page.getByLabel('Search family').fill('Suresh Jadhav');
   await page.locator('.family-search-results button').click();

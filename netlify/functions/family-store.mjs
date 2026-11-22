@@ -194,7 +194,12 @@ function localFile(userId) {
 }
 
 function isNetlifyRuntime() {
-  return process.env.NETLIFY === 'true' || Boolean(process.env.CONTEXT);
+  if (process.env.NODE_ENV === 'production' || (process.env.CONTEXT && process.env.CONTEXT !== 'dev')) return true;
+  if (process.env.CONTEXT === 'dev' || process.env.NETLIFY_DEV === 'true') return false;
+  return process.env.NETLIFY === 'true'
+    || Boolean(process.env.CONTEXT)
+    || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
+    || Boolean(process.env.LAMBDA_TASK_ROOT);
 }
 
 async function localRead(userId) {
@@ -405,10 +410,15 @@ export async function familyRequest(request, user) {
     });
   } catch (error) {
     const status = error instanceof FamilyError ? error.status : 503;
-    if (!(error instanceof FamilyError)) console.error('Family storage request failed:', error);
+    if (status >= 500) {
+      console.error('Family storage request failed:', error instanceof Error ? error.name : 'UnknownError');
+    }
+    const message = status < 500
+      ? error.message
+      : 'Family data is temporarily unavailable. Please try again.';
     return Response.json({
       error: status === 503 ? 'family_storage_unavailable' : 'family_request_failed',
-      message: error.message || 'Family data could not be saved.',
+      message,
     }, { status, headers: { 'Cache-Control': 'no-store' } });
   }
 }

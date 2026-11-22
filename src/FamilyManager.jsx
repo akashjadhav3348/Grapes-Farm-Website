@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { showDashboardToast } from './dashboardToast.js';
 import './family-admin.css';
 
 const emptyFields = {
@@ -119,21 +120,36 @@ function memberLabel(member) {
 }
 
 async function requestFamily(method = 'GET', body) {
-  const response = await fetch('/api/admin/family', {
-    method,
-    cache: 'no-store',
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  /* CHANGE #6 — 401 is a re-auth signal, not a data error */
-  if (response.status === 401) {
-    const error = new Error('Your session expired. Please sign in again.');
-    error.status = 401;
+  try {
+    const response = await fetch('/api/admin/family', {
+      method,
+      cache: 'no-store',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    /* CHANGE #6 — 401 is a re-auth signal, not a data error */
+    if (response.status === 401) {
+      const error = new Error('Your session expired. Please sign in again.');
+      error.status = 401;
+      throw error;
+    }
+    const result = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(result?.message || 'Family data could not be loaded.');
+    if (method !== 'GET') {
+      const successTitle = {
+        POST: 'Family member added',
+        PATCH: 'Family member updated',
+        DELETE: 'Family member deleted',
+      }[method] || 'Family changes saved';
+      void showDashboardToast('success', successTitle);
+    }
+    return result;
+  } catch (error) {
+    if (method !== 'GET') {
+      void showDashboardToast('error', error.message || 'Family changes could not be saved.');
+    }
     throw error;
   }
-  const result = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(result?.message || 'Family data could not be loaded.');
-  return result;
 }
 
 function fileAsDataURL(file) {

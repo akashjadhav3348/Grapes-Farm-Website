@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { createHmac, randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomUUID } from 'node:crypto';
 import { after, test } from 'node:test';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { getStore } from '@netlify/blobs';
+import { BlobsServer } from '@netlify/blobs/server';
 import { seedFamily, validateFamily } from '../netlify/functions/family-store.mjs';
 import adminHandler from '../netlify/functions/admin.mjs';
 
@@ -16,12 +18,17 @@ const previous = {
   dataFile: process.env.FAMILY_DATA_FILE,
   netlify: process.env.NETLIFY,
   context: process.env.CONTEXT,
+  netlifyDev: process.env.NETLIFY_DEV,
+  nodeEnv: process.env.NODE_ENV,
+  lambdaName: process.env.AWS_LAMBDA_FUNCTION_NAME,
+  lambdaRoot: process.env.LAMBDA_TASK_ROOT,
 };
 process.env.ADMIN_ORIGIN = origin;
 process.env.ADMIN_SESSION_SECRET = secret;
 process.env.FAMILY_DATA_FILE = join(tempDir, 'family.json');
-delete process.env.NETLIFY;
-delete process.env.CONTEXT;
+process.env.NETLIFY_DEV = 'true';
+process.env.CONTEXT = 'dev';
+process.env.NODE_ENV = 'test';
 
 after(async () => {
   await rm(tempDir, { recursive: true, force: true });
@@ -35,6 +42,14 @@ after(async () => {
   else process.env.NETLIFY = previous.netlify;
   if (previous.context === undefined) delete process.env.CONTEXT;
   else process.env.CONTEXT = previous.context;
+  if (previous.netlifyDev === undefined) delete process.env.NETLIFY_DEV;
+  else process.env.NETLIFY_DEV = previous.netlifyDev;
+  if (previous.nodeEnv === undefined) delete process.env.NODE_ENV;
+  else process.env.NODE_ENV = previous.nodeEnv;
+  if (previous.lambdaName === undefined) delete process.env.AWS_LAMBDA_FUNCTION_NAME;
+  else process.env.AWS_LAMBDA_FUNCTION_NAME = previous.lambdaName;
+  if (previous.lambdaRoot === undefined) delete process.env.LAMBDA_TASK_ROOT;
+  else process.env.LAMBDA_TASK_ROOT = previous.lambdaRoot;
 });
 
 function accessCookie(subject = 'owner') {
@@ -206,6 +221,19 @@ test('family API protects records, accepts one known parent and prevents duplica
   });
   assert.equal(addedMotherResponse.status, 201);
   const addedMother = (await addedMotherResponse.json()).member;
+  const editedResponse = await apiRequest('PATCH', {
+    id: created.member.id,
+    name: 'Rohan Jadhav Updated',
+    notes: 'Private family note',
+    photo: 'data:image/png;base64,AAAA',
+  });
+  assert.equal(editedResponse.status, 200);
+  const privateFamilyResponse = await apiRequest('GET');
+  const privateFamily = await privateFamilyResponse.json();
+  const privateMember = privateFamily.members.find((member) => member.id === created.member.id);
+  assert.equal(privateMember.notes, 'Private family note');
+  assert.equal(privateMember.photo, 'data:image/png;base64,AAAA');
+
   const deleteResponse = await apiRequest('DELETE', { id: created.member.id });
   assert.equal(deleteResponse.status, 200);
   const deleted = await deleteResponse.json();
@@ -218,4 +246,64 @@ test('family API protects records, accepts one known parent and prevents duplica
 
   const after = await apiRequest('GET');
   assert.equal((await after.json()).members.find((member) => member.id === root.id).fatherId, null);
+});
+
+test('production reads and persists family data in Blobs without touching local JSON', async () => {
+  const blobDirectory = await mkdtemp(join(tmpdir(), 'aishwary-family-blobs-'));
+  const token = randomUUID();
+  const server = new BlobsServer({ directory: blobDirectory, token, logger: () => {} });
+  const environment = [
+    'NETLIFY', 'CONTEXT', 'NETLIFY_DEV', 'NODE_ENV', 'AWS_LAMBDA_FUNCTION_NAME',
+    'LAMBDA_TASK_ROOT', 'NETLIFY_BLOBS_CONTEXT', 'FAMILY_DATA_FILE',
+  ].map((key) => [key, process.env[key]]);
+  const localFile = join(tempDir, 'production-must-not-write.json');
+
+  try {
+    const { port } = await server.start();
+    const edgeURL = `http://127.0.0.1:${port}`;
+    const store = getStore({ apiURL: edgeURL, name: 'aishwary-family-v1', token, siteID: 'test-site' });
+    const populated = seedFamily();
+    populated.members[0].name = 'Existing stored family member';
+    const key = `families/${createHash('sha256').update('owner').digest('hex')}`;
+    await store.setJSON(key, populated, { onlyIfNew: true });
+
+    process.env.NETLIFY = 'true';
+    process.env.CONTEXT = 'production';
+    delete process.env.NETLIFY_DEV;
+    process.env.NODE_ENV = 'production';
+    process.env.LAMBDA_TASK_ROOT = '/var/task';
+    process.env.NETLIFY_BLOBS_CONTEXT = Buffer.from(JSON.stringify({
+      apiURL: edgeURL, token, siteID: 'test-site',
+    })).toString('base64');
+    process.env.FAMILY_DATA_FILE = localFile;
+
+    const loadedResponse = await apiRequest('GET');
+    assert.equal(loadedResponse.status, 200);
+    const loaded = await loadedResponse.json();
+    assert.equal(loaded.members[0].name, 'Existing stored family member');
+
+    await store.delete(key);
+    const root = loaded.members.find((member) => !member.fatherId && !member.motherId);
+    const requestId = randomUUID();
+    const createdResponse = await apiRequest('POST', {
+      requestId,
+      name: 'Persistent Blob Child',
+      fatherId: root.id,
+    });
+    assert.equal(createdResponse.status, 201);
+
+    const persistedResponse = await apiRequest('GET');
+    assert.equal(persistedResponse.status, 200);
+    const persisted = await persistedResponse.json();
+    assert.ok(persisted.members.some((member) => member.name === 'Persistent Blob Child'));
+    assert.equal(persisted.members[0].name, seedFamily().members[0].name);
+    await assert.rejects(access(localFile), { code: 'ENOENT' });
+  } finally {
+    for (const [key, value] of environment) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    await server.stop();
+    await rm(blobDirectory, { recursive: true, force: true });
+  }
 });

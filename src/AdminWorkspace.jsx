@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { showDashboardToast } from './dashboardToast.js';
 
 /* CHANGE #1 — constants */
 const STORAGE_KEY = 'farm-workspace-v1';
@@ -63,13 +64,15 @@ export function useWorkspace() {
       setError('');
       setData(next);
       dataRef.current = next;
+      return true;
     } catch {
       setError('Unable to save to browser storage.');
+      return false;
     }
   }
 
   function save(values, message) {
-    update((prev) => ({
+    return update((prev) => ({
       ...prev,
       ...values,
       notifications: [
@@ -133,7 +136,11 @@ function ProfileForm({ data, save }) {
     const name = String(form.get('name') ?? '').trim();
     const bio = String(form.get('bio') ?? '').trim();
     if (!name) return;
-    save({ profile: { name, bio } }, 'Profile updated');
+    const saved = save({ profile: { name, bio } }, 'Profile updated');
+    void showDashboardToast(
+      saved ? 'success' : 'error',
+      saved ? 'Profile updated' : 'Unable to save profile. Please try again.'
+    );
   }
 
   return (

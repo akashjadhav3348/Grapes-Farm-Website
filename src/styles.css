@@ -19,9 +19,6 @@ nav a { padding-block: .65rem; }         /* was .5, now ~48px tall on desktop */
   box-shadow: 0 1px 4px rgba(0, 0, 0, .18);   /* CHANGE: visible on pale corners */
 }
 
-/* ── Hero heading safety ── */
-.hero h1 { text-wrap: balance; line-height: .92; }   /* was .88 — avoids clipping */
-
 /* ── Perf: skip backdrop blur on repeated cards ── */
 .crop-card { backdrop-filter: none; }    /* CHANGE: six glass cards, blur not needed here */
 
