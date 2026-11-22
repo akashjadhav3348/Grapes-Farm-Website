@@ -81,7 +81,7 @@ function Hero({ content }) {
       <section className="container hero" aria-labelledby="hero-title">
         <div className="hero-copy">
           <Kicker>{content.eyebrow}</Kicker>
-          <h1 id="hero-title">{content.title} <em>{content.accent}</em></h1>
+          <h5 id="hero-title">{content.title} <em>{content.accent}</em></h1>
           <p>{content.description}</p>
           <div className="actions">
             <a className="pill primary" href="#farm" lang="en">Explore the farm <span aria-hidden="true">↓</span></a>
