@@ -251,3 +251,261 @@ nav a:hover,.quiet-link:hover,.footer a:hover{text-decoration:underline;text-und
   .sky-toggle{display:none}
   .awaiting-reveal{opacity:1;transform:none}
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   NORMAL FORM DESIGN — Clean Photo Grid
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Container & Heading */
+.gallery { position: relative; }
+.gallery-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+/* The Clean Grid */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  animation: hero-enter 0.5s ease both;
+}
+
+/* Base Tile Styling */
+.photo-tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3; /* Standard landscape photo ratio */
+  overflow: hidden;
+  border-radius: 12px; /* Soft rounded corners */
+  border: none;
+  background: #e9f6f1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(23, 55, 45, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 0;
+  margin: 0;
+}
+
+/* Hover Effect */
+.photo-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(23, 55, 45, 0.12);
+}
+
+/* The Image */
+.photo-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.photo-tile:hover img {
+  transform: scale(1.05);
+}
+
+/* The Hover Icon (Arrow) */
+.photo-tile span {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+  font-size: 1rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.photo-tile:hover span {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Video Tiles (If any exist, they sit cleanly in the grid) */
+.video-tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--ink);
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 4px 12px rgba(23, 55, 45, 0.06);
+}
+
+.video-tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-tile figcaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* The "Show More" Button */
+.gallery-more {
+  margin: 2.5rem auto 0;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--ink);
+  border-radius: 100px;
+  padding: 0.8rem 2rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.gallery-more:hover {
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VIEWER (Kept clean and simple)
+   ═══════════════════════════════════════════════════════════════════ */
+.viewer {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.viewer::backdrop {
+  background: rgba(15, 30, 24, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.viewer-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  height: 100%;
+  padding: 2rem 4rem;
+  box-sizing: border-box;
+}
+
+.viewer-inner figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin: 0;
+}
+
+.viewer-inner img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.viewer-inner figcaption {
+  margin-top: 1.5rem;
+  color: #fff;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.viewer-inner button:not(.viewer-close) {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  font-size: 2rem;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.viewer-inner button:not(.viewer-close):hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+  transform: scale(1.1);
+}
+
+.viewer-close {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  width: 3rem !important;
+  height: 3rem !important;
+  border: none !important;
+  background: rgba(255,255,255,0.1) !important;
+  color: #fff !important;
+  font-size: 1.5rem !important;
+  transition: transform 0.3s ease, background 0.3s ease !important;
+}
+
+.viewer-close:hover {
+  background: #ff4d4d !important;
+  transform: rotate(90deg) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .viewer-inner {
+    grid-template-columns: 1fr;
+    padding: 4rem 1rem 2rem;
+  }
+  .viewer-inner button:not(.viewer-close) {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+  }
+  .viewer-inner button[aria-label="मागचा फोटो"] { left: 1rem; }
+  .viewer-inner button[aria-label="पुढचा फोटो"] { right: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+}
