@@ -4,9 +4,10 @@ import { browserChannel, browserContent, initialContent, parseContent, photoSour
 import Gallery from './Gallery.jsx';
 import FamilyTree from './FamilyTree.jsx';
 import Visit from './Visit.jsx';
+import { FarmingStory } from './FarmRegister.jsx';
 import './landing.css';
+import './reference-design.css';
 
-/* CHANGE #1 — one place to decide what counts as the admin surface */
 function isAdminPath(pathname = window.location.pathname, search = window.location.search) {
   const path = pathname.replace(/\/+$/, '') || '/';
   if (path === '/login' || path === '/admin' || path.startsWith('/admin/')) return true;
@@ -33,6 +34,7 @@ function Header() {
         <Brand />
         <nav aria-label="मुख्य मेनू" lang="en">
           <a href="#farm">The Farm</a>
+          <a href="#story">Story</a>
           <a href="#crops">Crops</a>
           <a href="#gallery">Gallery</a>
           <a href="#family">Family</a>
@@ -82,6 +84,7 @@ function Hero({ content }) {
         <div className="hero-copy">
           <Kicker>{content.eyebrow}</Kicker>
           <h1 id="hero-title">{content.title} <em>{content.accent}</em></h1>
+          <strong lang="en">Aishwary Farms — Rooted in Tradition, Growing with Love</strong>
           <p>{content.description}</p>
           <div className="actions">
             <a className="pill primary" href="#farm" lang="en">Explore the farm <span aria-hidden="true">↓</span></a>
@@ -89,11 +92,7 @@ function Hero({ content }) {
           </div>
         </div>
         <figure className="hero-art">
-          <img
-            src={photoSource(content.image)}
-            alt={content.caption}
-            fetchPriority="high"   /* CHANGE #2 — if React < 18.3 warns, use fetchpriority="high" */
-          />
+          <img src={photoSource(content.image)} alt={content.caption} fetchPriority="high" />
           <figcaption className="glass"><span aria-hidden="true">●</span> {content.caption}</figcaption>
         </figure>
       </section>
@@ -133,8 +132,7 @@ function Farm({ content }) {
 }
 
 function Crops({ title, crops }) {
-  /* CHANGE #3 — ignore empty/undefined crop entries instead of crashing on crop.id */
-  const visible = crops.filter(Boolean);
+  const visible = crops.filter(crop => crop && crop.visible !== false);
   return (
     <section className="crop-section section" id="crops" aria-labelledby="crop-title">
       <div className="container" data-reveal>
@@ -151,6 +149,7 @@ function Crops({ title, crops }) {
                 <p className="small-caps" lang="en">{crop.english}</p>
                 <h3>{crop.name}</h3>
                 <p>{crop.description}</p>
+                {crop.season && <p>{crop.season}</p>}
               </div>
             </article>
           ))}
@@ -161,9 +160,7 @@ function Crops({ title, crops }) {
 }
 
 export default function App() {
-  /* CHANGE #4 — admin comes from state so back/forward updates the shell */
   const [admin, setAdmin] = useState(() => isAdminPath());
-
   const [content, setContent] = useState(initialContent);
   const [ready, setReady] = useState(false);
 
@@ -175,7 +172,7 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-    const controller = new AbortController();          // CHANGE #5 — abortable loads
+    const controller = new AbortController();
 
     async function load() {
       const local = await browserContent()
@@ -208,10 +205,7 @@ export default function App() {
   useEffect(() => {
     if (admin) return;
     const sectionId = window.location.hash.slice(1);
-    if (sectionId) {
-      /* CHANGE #6 — 'auto' is more widely supported than 'instant' */
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'auto' });
-    }
+    if (sectionId) document.getElementById(sectionId)?.scrollIntoView({ behavior: 'auto' });
 
     if (!window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const observer = new IntersectionObserver((entries) => {
@@ -232,7 +226,7 @@ export default function App() {
       observer.disconnect();
       sections.forEach((section) => section.classList.remove('awaiting-reveal'));
     };
-  }, [admin, ready]);   // CHANGE #7 — re-run after content is ready so late sections are observed
+  }, [admin, ready]);
 
   const adminView = useMemo(
     () => <AdminAccess content={content} onChange={setContent} ready={ready} />,
@@ -247,8 +241,9 @@ export default function App() {
       <Hero content={content.hero} />
       <main id="main">
         <Farm content={content.farm} />
+        <FarmingStory content={content} />
         <Crops title={content.cropTitle} crops={content.crops} />
-        <Gallery title={content.galleryTitle} description={content.galleryDescription} groups={content.gallery} />
+        <Gallery title={content.galleryTitle} description={content.galleryDescription} groups={content.gallery.map(group => ({...group, items:group.items.filter(item=>item.visible !== false)})).filter(group=>group.items.length)} />
         <FamilyTree title={content.familyTitle} labels={content.familyLabels} />
         <Visit content={content.visit} />
       </main>

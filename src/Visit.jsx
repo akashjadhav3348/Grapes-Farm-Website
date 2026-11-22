@@ -12,7 +12,12 @@ export default function Visit({ content }) {
           <p>{content.description}</p>
           <ul className="phone-links" aria-label="संपर्क क्रमांक">
             {content.phones.filter((phone) => /\d/.test(phone)).map((display, index) => (
-              <li key={index}><a href={`tel:${display.startsWith("+") ? "" : "+91"}${display.replace(/[^+\d]/g, "")}`}><span aria-hidden="true">☎</span><span lang="en">{display}</span></a></li>
+              <li key={index}>
+                <a href={`tel:${display.startsWith('+') ? '' : '+91'}${display.replace(/[^+\d]/g, '')}`}>
+                  <span aria-hidden="true">☎</span>
+                  <span lang="en">{display}</span>
+                </a>
+              </li>
             ))}
           </ul>
           <div className="farm-security">
@@ -21,7 +26,13 @@ export default function Visit({ content }) {
           </div>
         </div>
         <div className="visit-map">
-          <iframe src={mapEmbed} title="ऐश्वर्य फार्म्सचा Google Maps नकाशा" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+          <iframe
+            src={mapEmbed}
+            title="ऐश्वर्य फार्म्सचा Google Maps नकाशा"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
           <a className="pill primary" href={map}>Google Maps वर दिशा पाहा <span aria-hidden="true">↗</span></a>
         </div>
       </div>

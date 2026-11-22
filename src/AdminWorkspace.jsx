@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { showDashboardToast } from './dashboardToast.js';
+import FamilyBackup from './FamilyBackup.jsx';
 
 /* CHANGE #1 — constants */
 const STORAGE_KEY = 'farm-workspace-v1';
 const NOTIFICATION_LIMIT = 50;
 const DEFAULT_STATE = {
-  profile: { name: 'Administrator', bio: '' },
+  profile: { name: 'Akash Jadhav', bio: '' },
   tasks: [],
   notifications: [],
 };
@@ -56,7 +57,7 @@ export function useWorkspace() {
   }, []);
 
   /* CHANGE #5 — read the latest state via ref so back-to-back calls don't clobber */
-  function update(nextOrFn) {
+  function update(nextOrFn, successTitle = 'Changes saved') {
     const prev = dataRef.current;
     const next = typeof nextOrFn === 'function' ? nextOrFn(prev) : nextOrFn;
     try {
@@ -64,9 +65,11 @@ export function useWorkspace() {
       setError('');
       setData(next);
       dataRef.current = next;
+      void showDashboardToast('success', successTitle);
       return true;
     } catch {
       setError('Unable to save to browser storage.');
+      void showDashboardToast('error', 'Unable to save changes');
       return false;
     }
   }
@@ -76,10 +79,10 @@ export function useWorkspace() {
       ...prev,
       ...values,
       notifications: [
-        { id: newId(), text: message, time: new Date().toISOString(), read: false },
+        { id: newId(), text: message, actor: prev.profile.name, time: new Date().toISOString(), read: false },
         ...prev.notifications,
       ].slice(0, NOTIFICATION_LIMIT),
-    }));
+    }), message === 'Profile updated' ? 'Profile updated' : 'Changes saved');
   }
 
   return { data, update, save, error };
@@ -108,13 +111,34 @@ function formatTime(iso) {
 /* =========================================================
    Subcomponents — split for readability (CHANGE #7)
    ========================================================= */
-function SettingsPanel() {
+function SettingsPanel({workspace}) {
+  const [preview,setPreview] = useState(null);
+  const [error,setError] = useState('');
+  async function previewFile(file) {
+    setPreview(null); setError('');
+    if (!file) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      const data = backup.workspace;
+      if (backup.format !== 'aishwary-workspace-v1' || typeof data?.profile?.name !== 'string' ||
+        typeof data.profile.bio !== 'string' || !Array.isArray(data.tasks) || !Array.isArray(data.notifications) ||
+        !data.tasks.every(t => typeof t?.id === 'string' && typeof t.title === 'string' && typeof t.date === 'string' && typeof t.done === 'boolean') ||
+        !data.notifications.every(n => typeof n?.id === 'string' && typeof n.text === 'string' && typeof n.read === 'boolean' && Number.isFinite(Date.parse(n.time)))) throw Error();
+      setPreview(data);
+    } catch { setError('Select a valid Aishwary workspace backup.'); }
+  }
+  function download() {
+    const url=URL.createObjectURL(new Blob([JSON.stringify({format:'aishwary-workspace-v1',workspace:workspace.data},null,2)],{type:'application/json'}));
+    const link=document.createElement('a'); link.href=url; link.download='aishwary-workspace.json'; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   return (
     <div className="settings-summary">
-      <article>
-        <h3>Family data</h3>
-        <p>Member details, photos and relationship links are available only to the signed-in family administrator.</p>
-      </article>
+      <article><h3>Workspace backup</h3><p>Export this browser’s profile, tasks and notifications. Public website content has a separate JSON export in its editor.</p><button className="admin-btn" onClick={download}>Download workspace backup</button>
+      <label>Preview a backup<input type="file" accept=".json,application/json" onChange={e=>previewFile(e.target.files[0])}/></label>
+      {error && <p role="alert">{error}</p>}
+      {preview && <div><p>{preview.profile.name} · {preview.tasks.length} tasks · {preview.notifications.length} notifications</p>
+      <button className="admin-btn blue" onClick={()=>{if(window.confirm('Replace the profile, tasks and notifications in this browser?') && workspace.update(preview,'Workspace restored'))setPreview(null);}}>Restore this backup</button> <button className="admin-btn" onClick={()=>setPreview(null)}>Cancel</button></div>}</article>
+      <FamilyBackup />
       <article>
         <h3>Sign-in</h3>
         <p>This site uses its existing administrator sign-in. Password recovery is not configured for this account.</p>
@@ -122,6 +146,10 @@ function SettingsPanel() {
       <article>
         <h3>Profile</h3>
         <p>Update your dashboard display name and profile note in My profile. These settings are saved in this browser.</p>
+      </article>
+      <article>
+        <h3>Browser saves &amp; publishing</h3>
+        <p>Homepage, farm, crop and gallery edits are stored for this browser. Download content.json from a content editor and redeploy it to publish changes for visitors.</p>
       </article>
     </div>
   );
@@ -136,11 +164,7 @@ function ProfileForm({ data, save }) {
     const name = String(form.get('name') ?? '').trim();
     const bio = String(form.get('bio') ?? '').trim();
     if (!name) return;
-    const saved = save({ profile: { name, bio } }, 'Profile updated');
-    void showDashboardToast(
-      saved ? 'success' : 'error',
-      saved ? 'Profile updated' : 'Unable to save profile. Please try again.'
-    );
+    save({ profile: { name, bio } }, 'Profile updated');
   }
 
   return (
@@ -167,11 +191,11 @@ function TasksPanel({ data, save }) {
     const title = String(form.get('title') ?? '').trim();
     const date = String(form.get('date') ?? '');
     if (!title || !date) return;
-    save(
-      { tasks: [...data.tasks, { id: newId(), title, date, done: false }] },
+    const saved = save(
+      { tasks: [...data.tasks, { id: newId(), title, date, done: false, priority:form.get('priority'), assignee:String(form.get('assignee') || '').trim() }] },
       'New farm task added'
     );
-    event.currentTarget.reset();
+    if (saved) event.currentTarget.reset();
   }
 
   return (
@@ -185,6 +209,8 @@ function TasksPanel({ data, save }) {
           Due date
           <input name="date" type="date" required />
         </label>
+        <label>Assigned to<input name="assignee" maxLength={100} placeholder="Optional name"/></label>
+        <label>Priority<select name="priority" defaultValue="Normal"><option>Low</option><option>Normal</option><option>High</option></select></label>
         <button className="admin-btn blue" type="submit">Add task</button>
       </form>
 
@@ -192,7 +218,7 @@ function TasksPanel({ data, save }) {
         <table className="admin-table">
           <caption className="sr-only">Farm tasks</caption>
           <thead>
-            <tr><th>Completed</th><th>Task</th><th>Due date</th><th>Action</th></tr>
+            <tr><th>Completed</th><th>Task</th><th>Assigned to</th><th>Priority</th><th>Due date</th><th>Action</th></tr>
           </thead>
           <tbody>
             {data.tasks.map((task) => (
@@ -209,6 +235,7 @@ function TasksPanel({ data, save }) {
                   />
                 </td>
                 <td>{task.title}</td>
+                <td>{task.assignee || 'Unassigned'}</td><td><span className="role-badge">{task.priority || 'Normal'}</span></td>
                 <td>{task.date}</td>
                 <td>
                   <button
@@ -236,6 +263,8 @@ function TasksPanel({ data, save }) {
 }
 
 function NotificationsPanel({ data, update }) {
+  const [filter,setFilter] = useState('All');
+  const rows = data.notifications.filter(n=>filter==='All' || n.read===(filter==='Read')).sort((a,b)=>Date.parse(b.time)-Date.parse(a.time));
   return (
     <>
       <button
@@ -249,20 +278,10 @@ function NotificationsPanel({ data, update }) {
         Mark all read
       </button>
 
-      <div className="notification-list">
-        {data.notifications.map((n) => (
-          <article key={n.id} className={n.read ? 'read' : ''}>
-            <span className="notification-dot" aria-hidden="true" />
-            <div>
-              <strong>{n.text}</strong>
-              <p>{formatTime(n.time)}</p>
-            </div>
-          </article>
-        ))}
-        {!data.notifications.length && (
-          <p className="empty-directory">No notifications yet. Profile and task changes appear here.</p>
-        )}
-      </div>
+      <label className="directory-search">Filter notifications<select value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option><option>Unread</option><option>Read</option></select></label>
+      <div className="admin-table-scroll"><table className="admin-table"><caption className="sr-only">Workspace notifications</caption><thead><tr><th>Notification</th><th>User</th><th>Date &amp; time</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>{rows.map(n=><tr key={n.id}><td>{n.text}</td><td>{n.actor || '—'}</td><td>{formatTime(n.time)}</td><td>{n.read?'Read':'Unread'}</td><td><button className="admin-btn" onClick={()=>update(prev=>({...prev,notifications:prev.notifications.map(item=>item.id===n.id?{...item,read:!item.read}:item)}))}>Mark {n.read?'unread':'read'}</button></td></tr>)}
+        {!rows.length && <tr><td colSpan={5}>No notifications to show.</td></tr>}</tbody></table></div>
     </>
   );
 }
@@ -280,7 +299,7 @@ export function WorkspacePage({ section, workspace }) {
       {section !== 'settings' && <p className="workspace-note">Saved on this browser.</p>}
       {error && <p role="alert">{error}</p>}
 
-      {section === 'settings' && <SettingsPanel />}
+      {section === 'settings' && <SettingsPanel workspace={workspace} />}
       {section === 'profile' && <ProfileForm data={data} save={save} />}
       {section === 'tasks' && <TasksPanel data={data} save={save} />}
       {section === 'notifications' && <NotificationsPanel data={data} update={update} />}

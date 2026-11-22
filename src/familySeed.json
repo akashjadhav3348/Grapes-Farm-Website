@@ -1,0 +1,310 @@
+{
+  "version": 1,
+  "members": [
+    {
+      "id": "legacy-b6e0a1db9c03f741",
+      "name": "निवृत्ती रखमाजी जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-af43eae60d011670"
+      ]
+    },
+    {
+      "id": "legacy-af43eae60d011670",
+      "name": "भीमाबाई निवृत्ती जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-b6e0a1db9c03f741"
+      ]
+    },
+    {
+      "id": "legacy-3a6ca58dd90fc60e",
+      "name": "मधुकर निवृत्ती जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-b6e0a1db9c03f741",
+      "motherId": "legacy-af43eae60d011670",
+      "spouseIds": [
+        "legacy-13b5889851440209"
+      ]
+    },
+    {
+      "id": "legacy-13b5889851440209",
+      "name": "सिंधुबाई मधुकर जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-3a6ca58dd90fc60e"
+      ]
+    },
+    {
+      "id": "legacy-f04b7c3cf32bc75e",
+      "name": "विकास मधुकर जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "Farmer",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-3a6ca58dd90fc60e",
+      "motherId": "legacy-13b5889851440209",
+      "spouseIds": [
+        "legacy-6dcbb3522e39f2f7"
+      ]
+    },
+    {
+      "id": "legacy-6dcbb3522e39f2f7",
+      "name": "अनुजा विकास जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-f04b7c3cf32bc75e"
+      ]
+    },
+    {
+      "id": "legacy-e73b2b2d3dab0efd",
+      "name": "ऐश्वर्य विकास जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-f04b7c3cf32bc75e",
+      "motherId": "legacy-6dcbb3522e39f2f7",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-22cc8cac7464f15b",
+      "name": "सचिन मधुकर जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "Farmer · Farm Manager",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-3a6ca58dd90fc60e",
+      "motherId": "legacy-13b5889851440209",
+      "spouseIds": [
+        "legacy-adf784dda0f02c11"
+      ]
+    },
+    {
+      "id": "legacy-adf784dda0f02c11",
+      "name": "अश्विनी सचिन जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-22cc8cac7464f15b"
+      ]
+    },
+    {
+      "id": "legacy-727eb05651264b9c",
+      "name": "सान्वी सचिन जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-22cc8cac7464f15b",
+      "motherId": "legacy-adf784dda0f02c11",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-0c606ed2193ea0d8",
+      "name": "शिव सचिन जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-22cc8cac7464f15b",
+      "motherId": "legacy-adf784dda0f02c11",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-c302e53e752943dc",
+      "name": "ज्ञानेश्वर निवृत्ती जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-b6e0a1db9c03f741",
+      "motherId": "legacy-af43eae60d011670",
+      "spouseIds": [
+        "legacy-3dfe075fcc7c5224"
+      ]
+    },
+    {
+      "id": "legacy-3dfe075fcc7c5224",
+      "name": "मीनाबाई ज्ञानेश्वर जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-c302e53e752943dc"
+      ]
+    },
+    {
+      "id": "legacy-c78946b1b2e44747",
+      "name": "पूजा ज्ञानेश्वर जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "विवाहित",
+      "createdAt": null,
+      "fatherId": "legacy-c302e53e752943dc",
+      "motherId": "legacy-3dfe075fcc7c5224",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-c3966c2261330f93",
+      "name": "अर्चना ज्ञानेश्वर जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "विवाहित",
+      "createdAt": null,
+      "fatherId": "legacy-c302e53e752943dc",
+      "motherId": "legacy-3dfe075fcc7c5224",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-c77354f03852917f",
+      "name": "आकाश ज्ञानेश्वर जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "Software Developer",
+      "status": "अविवाहित",
+      "createdAt": null,
+      "fatherId": "legacy-c302e53e752943dc",
+      "motherId": "legacy-3dfe075fcc7c5224",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-2cc26d84b53f0931",
+      "name": "संजय निवृत्ती जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": "legacy-b6e0a1db9c03f741",
+      "motherId": "legacy-af43eae60d011670",
+      "spouseIds": [
+        "legacy-ee8999fb19be2ee7"
+      ]
+    },
+    {
+      "id": "legacy-ee8999fb19be2ee7",
+      "name": "लताबाई संजय जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "",
+      "createdAt": null,
+      "fatherId": null,
+      "motherId": null,
+      "spouseIds": [
+        "legacy-2cc26d84b53f0931"
+      ]
+    },
+    {
+      "id": "legacy-bf4644567cc59ec8",
+      "name": "अमोल संजय जाधव",
+      "gender": "male",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "Automotive Electrical & ECM Specialist",
+      "status": "अविवाहित",
+      "createdAt": null,
+      "fatherId": "legacy-2cc26d84b53f0931",
+      "motherId": "legacy-ee8999fb19be2ee7",
+      "spouseIds": []
+    },
+    {
+      "id": "legacy-ad6b31569a0a3330",
+      "name": "ऋतुजा संजय जाधव",
+      "gender": "female",
+      "birthDate": "",
+      "photo": "",
+      "notes": "",
+      "profession": "",
+      "status": "विवाहित",
+      "createdAt": null,
+      "fatherId": "legacy-2cc26d84b53f0931",
+      "motherId": "legacy-ee8999fb19be2ee7",
+      "spouseIds": []
+    }
+  ],
+  "requests": []
+}

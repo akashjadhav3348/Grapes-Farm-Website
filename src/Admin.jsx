@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import FamilyAnalytics from './FamilyAnalytics.jsx';
 import AdminLayout from './AdminLayout.jsx';
+import { familyData } from './localFamily.js';
+import { FarmRegister } from './FarmRegister.jsx';
 import NetlifyActivity from './NetlifyActivity.jsx';
 import AdminOverview, { PhotoDialog, TeamDirectory } from './AdminOverview.jsx';
-import { useWorkspace, WorkspacePage, DashboardCharts } from './AdminWorkspace.jsx';
+import { useWorkspace, WorkspacePage } from './AdminWorkspace.jsx';
 import FamilyManager, { generationsFor } from './FamilyManager.jsx';
 import { dashboardText } from './dashboardText.js';
+import { showDashboardToast } from './dashboardToast.js';
 import {
-  browserChannel, browserContent, contentFile, familyNames,
+  browserChannel, browserContent, browserContentSavedAt, contentFile, familyNames,
   initialContent, parseContent, photoTypes,
 } from './content.js';
 
@@ -17,12 +19,25 @@ const primary = 'inline-flex min-h-11 items-center justify-center rounded-xl bor
 const card = 'rounded-2xl border border-emerald-900/10 bg-white p-4 shadow-sm sm:p-6';
 const accept = photoTypes.join(',');
 
+function formatSavedAt(value, lang) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString(lang === 'mr' ? 'mr-IN' : 'en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 const sections = [
-  ['overview', 'Overview'], ['team', 'Team directory'],
-  ['family-tree', 'Family tree'], ['members', 'Members'],
+  ['overview', 'Overview'], ['hero', 'Homepage'], ['farm', 'Farm'],
+  ['crops', 'Crops'], ['gallery', 'Gallery'], ['family-tree', 'Family tree'],
+  ['members', 'Members'], ['team', 'Team directory'], ['tasks', 'Tasks & calendar'],
+  ['notifications', 'Notifications'], ['activity', 'Netlify activity'],
   ['profile', 'My profile'], ['settings', 'Settings'],
-  ['tasks', 'Tasks & calendar'], ['notifications', 'Notifications'],
-  ['activity', 'Netlify activity'], ['hero', 'मुख्यपृष्ठ'], ['farm', 'शेती'], ['crops', 'पिके'], ['gallery', 'गॅलरी'], ['family', 'कुटुंब'], ['visit', 'संपर्क'],
+  ['family', 'Family'], ['visit', 'Contact'],
 ];
 
 /* CHANGE #1 — expanded so every section is deep-linkable */
@@ -50,10 +65,10 @@ function sectionFromLocation() {
   return match ? match[0] : 'overview';
 }
 
-function Field({ label, value, onChange, multiline = false }) {
+function Field({ label, value, onChange, multiline = false, className = '' }) {
   const Element = multiline ? 'textarea' : 'input';
   return (
-    <label className="grid min-w-0 gap-1.5 text-sm font-bold">
+    <label className={`grid min-w-0 gap-1.5 text-sm font-bold ${className}`}>
       {label}
       <Element
         className={input}
@@ -122,7 +137,9 @@ function storedTheme() {
   }
 }
 
-function FamilyOverview({ navigate, tasks }) {
+let hasDisplayedFamilyOverview = false;
+
+function FamilyOverview({ content, navigate, tasks, notifications, profileName, lang }) {
   const [family, setFamily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -131,30 +148,50 @@ function FamilyOverview({ navigate, tasks }) {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    let delayTimer;
+    const shouldDelay = !hasDisplayedFamilyOverview;
+    const started = performance.now();
+
     async function load() {
       setLoading(true);
       setError('');
       try {
-        const response = await fetch('/api/admin/family', { cache: 'no-store', signal: controller.signal });
+        const response = await familyData({ cache: 'no-store', signal: controller.signal });
         const result = await response.json().catch(() => null);
         if (!response.ok) throw new Error(result?.message || 'Family data could not be loaded.');
         if (active) setFamily(result);
       } catch (loadError) {
         if (active && loadError.name !== 'AbortError') setError(loadError.message);
       } finally {
-        if (active) setLoading(false);
+        if (!active) return;
+        const remaining = shouldDelay ? Math.max(0, 2000 - (performance.now() - started)) : 0;
+        delayTimer = window.setTimeout(() => {
+          if (!active) return;
+          hasDisplayedFamilyOverview = true;
+          setLoading(false);
+        }, remaining);
       }
     }
     void load();
     return () => {
       active = false;
+      window.clearTimeout(delayTimer);
       controller.abort();
     };
   }, [reload]);
 
-  if (loading) return <section className="admin-panel family-overview-loading" aria-live="polite">Loading family dashboard…</section>;
+  if (loading) return <section className="dashboard-loading" aria-live="polite">
+    <header className="overview-welcome">
+      <div><span className="overview-eyebrow">CONTROL CENTER</span><h1 id="admin-title">Welcome back, {profileName}</h1><p>Loading your live farm and family data…</p></div>
+      <span className="overview-live"><i /> Live workspace</span>
+    </header>
+    <div className="dashboard-loading-hero" />
+    <div className="dashboard-loading-kpis">{Array.from({ length: 6 }, (_, index) => <span key={index} />)}</div>
+    <div className="dashboard-loading-panels"><span /><span /></div>
+  </section>;
   if (error) return (
     <section className="admin-panel family-overview-error">
+      <h1 id="admin-title">Welcome back, {profileName}</h1>
       <h2>Family overview unavailable</h2>
       <p role="alert">{error}</p>
       <button className="admin-btn blue" type="button" onClick={() => setReload((value) => value + 1)}>Try again</button>
@@ -163,7 +200,16 @@ function FamilyOverview({ navigate, tasks }) {
 
   const members = family?.members ?? [];
   const generations = members.length ? generationsFor(members) : [];
-  return <FamilyAnalytics members={members} generations={generations} navigate={navigate} tasks={tasks} />;
+  return <AdminOverview
+    content={content}
+    navigate={navigate}
+    members={members}
+    generations={generations}
+    tasks={tasks}
+    notifications={notifications}
+    profileName={profileName}
+    lang={lang}
+  />;
 }
 
 export default function Admin({ content, onChange, ready, lang, user, onLogout, logoutError }) {
@@ -175,10 +221,12 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
   const workspace = useWorkspace();
   const [navSearch, setNavSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState(storedTheme);
   const [themeWarning, setThemeWarning] = useState('');
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  const [savedAt, setSavedAt] = useState('');
   const [folder, setFolder] = useState(null);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
@@ -215,13 +263,28 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
     return () => window.removeEventListener('popstate', syncRoute);
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    browserContentSavedAt().then((value) => {
+      if (active && typeof value === 'string') setSavedAt(value);
+    }).catch((error) => {
+      if (active) setStatus(error.message || 'Saved time could not be loaded.');
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   async function perform(callback) {
     setBusy(true);
     setStatus('');
     try {
       await callback();
+      return true;
     } catch (error) {
-      if (error.name !== 'AbortError') setStatus(error.message || 'बदल पूर्ण झाले नाहीत.');
+      if (error.name === 'AbortError') return null;
+      setStatus(error.message || 'बदल पूर्ण झाले नाहीत.');
+      return false;
     } finally {
       setBusy(false);
     }
@@ -232,7 +295,9 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
   }
 
   async function storeInBrowser() {
-    await browserContent(parseContent(content));
+    const timestamp = new Date().toISOString();
+    await browserContent(parseContent(content), timestamp);
+    setSavedAt(timestamp);
     if ('BroadcastChannel' in window) {
       const channel = new BroadcastChannel(browserChannel);
       channel.postMessage('saved');
@@ -240,15 +305,19 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
     }
   }
 
-  function save() {
-    return perform(async () => {
+  async function save() {
+    const result = await perform(async () => {
       await storeInBrowser();
       setStatus('या ब्राउझरमध्ये बदल सेव्ह झाले.');
     });
+    if (result !== null) {
+      void showDashboardToast(result ? 'success' : 'error', result ? 'Changes saved' : 'Unable to save changes');
+    }
+    return result;
   }
 
-  function saveFolder() {
-    return perform(async () => {
+  async function saveFolder() {
+    const result = await perform(async () => {
       const data = JSON.stringify(parseContent(content), null, 2);
       const directory = folder ?? await window.showDirectoryPicker({ mode: 'readwrite', id: 'aishwary-content' });
       const file = await directory.getFileHandle(contentFile, { create: true });
@@ -264,10 +333,14 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
       await storeInBrowser();
       setStatus(`${directory.name}/${contentFile} was saved. Uploaded photos are stored in the same file.`);
     });
+    if (result !== null) {
+      void showDashboardToast(result ? 'success' : 'error', result ? 'Folder saved' : 'Unable to save folder');
+    }
+    return result;
   }
 
-  function exportFile() {
-    return perform(async () => {
+  async function exportFile() {
+    const result = await perform(async () => {
       const url = URL.createObjectURL(
         new Blob([JSON.stringify(parseContent(content), null, 2)], { type: 'application/json' })
       );
@@ -278,6 +351,10 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       setStatus('content.json डाउनलोड सुरू आहे.');
     });
+    if (result !== null) {
+      void showDashboardToast(result ? 'success' : 'error', result ? 'JSON download started' : 'Unable to download JSON');
+    }
+    return result;
   }
 
   function importFile(event) {
@@ -287,6 +364,10 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
       void perform(async () => {
         onChange(parseContent(JSON.parse(await file.text())));
         setStatus('फाइल प्रिव्ह्यूमध्ये उघडली. बदल ठेवण्यासाठी Save करा.');
+      }).then((result) => {
+        if (result !== null) {
+          void showDashboardToast(result ? 'info' : 'error', result ? 'JSON opened for preview' : 'Unable to import JSON');
+        }
       });
     }
   }
@@ -357,6 +438,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
   return (
     <AdminLayout
       lang={lang} theme={theme} section={section} menuOpen={menuOpen} setMenuOpen={setMenuOpen}
+      sidebarCollapsed={sidebarCollapsed} setSidebarCollapsed={setSidebarCollapsed}
       sections={visibleSections} navigate={navigate} search={navSearch} setSearch={setNavSearch}
       unreadCount={unreadCount} toggleTheme={toggleTheme} profileName={workspace.data.profile.name}
       onLogout={onLogout} logoutError={logoutError} themeWarning={themeWarning} title={headerTitle}
@@ -372,11 +454,14 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
               onNavigate={navigate}
             />
           ) : section === 'overview' ? (
-            <>
-              <FamilyOverview navigate={navigate} tasks={workspace.data.tasks} />
-              <DashboardCharts content={content} />
-              <AdminOverview content={content} navigate={navigate} />
-            </>
+            <FamilyOverview
+              content={content}
+              navigate={navigate}
+              tasks={workspace.data.tasks}
+              notifications={workspace.data.notifications}
+              profileName={workspace.data.profile.name}
+              lang={lang}
+            />
           ) : section === 'team' ? (
             <TeamDirectory />
           ) : section === 'activity' ? (
@@ -385,25 +470,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
             <>
               {/* CHANGE #8 — disabled:opacity-60 (opacity-65 is not a default Tailwind step) */}
               <fieldset disabled={!ready || busy} className="m-0 min-w-0 border-0 p-0 disabled:opacity-60">
-                <div className={`${card} mb-4 flex flex-wrap gap-2`}>
-                  <button className={primary} type="button" onClick={save}>{t('Save in browser')}</button>
-                  {'showDirectoryPicker' in window && (
-                    <button className={action} type="button" onClick={saveFolder}>{t('Save to folder')}</button>
-                  )}
-                  <button className={action} type="button" onClick={exportFile}>{t('Download JSON')}</button>
-                  <label className={`${action} cursor-pointer focus-within:outline-2`}>
-                    {t('Import JSON')}
-                    <input className="sr-only" type="file" accept=".json,application/json" onChange={importFile} />
-                  </label>
-                  <p role="status" className="m-0 w-full text-sm text-emerald-950">
-                    {!ready ? t('एडिटर लोड होत आहे…') : t(status)}
-                  </p>
-                  <p className="m-0 w-full text-sm text-emerald-950/80">
-                    {t('फाइलमधले बदल वेबसाइटवर सर्वांना दाखवण्यासाठी content.json प्रोजेक्टच्या public फोल्डरमध्ये ठेवून साइट पुन्हा प्रकाशित करा.')}
-                  </p>
-                </div>
-
-                <div className={`${card} grid min-w-0 gap-4`}>
+                <div className={`${card} grid min-w-0 gap-4 ${section === 'hero' ? 'homepage-editor-form' : ''}`}>
                   <h2 className="text-xl font-bold text-slate-900">{sectionTitle}</h2>
                   {fields[section]?.map(([key, label]) => (
                     <Field
@@ -411,20 +478,23 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                       label={t(label)}
                       value={content[section][key]}
                       multiline={key === 'description'}
+                      className={section === 'hero' && key === 'description' ? 'homepage-field-span-all' : ''}
                       onChange={(value) => field(section, key, value)}
                     />
                   ))}
 
                   {(section === 'hero' || section === 'farm') && (
-                    <Photo
-                      label={t('फोटो बदला')}
-                      src={content[section].image}
-                      onUpload={(files) => upload(files, ([image]) => field(section, 'image', image))}
-                    />
+                    <div className={section === 'hero' ? 'homepage-photo-field homepage-field-span-all' : ''}>
+                      <Photo
+                        label={t('फोटो बदला')}
+                        src={content[section].image}
+                        onUpload={(files) => upload(files, ([image]) => field(section, 'image', image))}
+                      />
+                    </div>
                   )}
 
                   {section === 'hero' && (
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="homepage-field-span-all grid gap-3 sm:grid-cols-3">
                       {['एकूण एकर', 'द्राक्षबाग', 'इतर पिके'].map((label, index) => (
                         <Field
                           key={label}
@@ -436,6 +506,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                     </div>
                   )}
 
+                  {section === 'farm' && <FarmRegister content={content} change={farms => set('additionalFarms', farms)} />}
                   {section === 'farm' && (
                     <Field
                       label={t('द्राक्षांचे वाण (प्रत्येक ओळीत एक)')}
@@ -489,6 +560,8 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                           <div className={`${card} grid gap-3`} key={crop.id}>
                             <Field label={t('पिकाचे नाव')} value={crop.name} onChange={(name) => editCrop(index, { name })} />
                             <Field label={t('English name')} value={crop.english} onChange={(english) => editCrop(index, { english })} />
+                            <Field label="Growing season" value={crop.season || ''} onChange={season => editCrop(index, { season })} />
+                            <label><input type="checkbox" checked={crop.visible !== false} onChange={e => editCrop(index,{visible:e.target.checked})}/> Show crop on website</label>
                             <Field label={t('वर्णन')} multiline value={crop.description} onChange={(description) => editCrop(index, { description })} />
                             <Field label={t('फोटोचे वर्णन')} value={crop.alt} onChange={(alt) => editCrop(index, { alt })} />
                             <Photo
@@ -593,6 +666,12 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                           <div className="grid gap-2 sm:grid-cols-2">
                             {group.items.map((item, index) => (
                               <div className="grid gap-2 rounded-xl border border-emerald-900/10 p-2" key={item.id}>
+                                <label><input type="checkbox" checked={item.visible !== false} onChange={e => editItem(index,{visible:e.target.checked})}/> Show in public gallery</label>
+                                <div className="flex gap-2">{[-1,1].map(step => <button key={step} className={action} type="button" disabled={!group.items[index+step]} onClick={()=>editGroup(groupIndex,current=>{
+                                  const items = [...current.items];
+                                  [items[index],items[index+step]] = [items[index+step],items[index]];
+                                  return {...current,items};
+                                })}>{step<0?'Move earlier':'Move later'}</button>)}</div>
                                 {item.video ? (
                                   <p className="text-sm">{t('व्हिडिओ')} · {index + 1}</p>
                                 ) : (
@@ -621,20 +700,43 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                       )}
                     </>
                   )}
+
+                <div className={`editor-save-panel mt-4 grid gap-3 ${section === 'hero' ? 'homepage-field-span-all' : ''}`}>
+                  <div className="editor-save-actions flex flex-wrap gap-2">
+                    <button className={`${primary} editor-save-primary`} type="button" onClick={save}>{t('Save in browser')}</button>
+                    {'showDirectoryPicker' in window && (
+                      <button className={`${action} editor-save-secondary`} type="button" onClick={saveFolder}>{t('Save to folder')}</button>
+                    )}
+                    <button className={`${action} editor-save-secondary`} type="button" onClick={exportFile}>{t('Download JSON')}</button>
+                    <label className={`${action} editor-save-secondary cursor-pointer focus-within:outline-2`}>
+                      {t('Import JSON')}
+                      <input className="sr-only" type="file" accept=".json,application/json" onChange={importFile} />
+                    </label>
+                    <button
+                      className={`${action} editor-save-secondary`}
+                      type="button"
+                      onClick={() => {
+                        onChange(initialContent);
+                        setStatus('मूळ मजकूर प्रिव्ह्यूमध्ये आला. तो ठेवण्यासाठी Save करा.');
+                      }}
+                    >
+                      {t('मूळ मजकूर प्रिव्ह्यू करा')}
+                    </button>
+                  </div>
+                  <p role="status" className="m-0 text-sm text-emerald-950">
+                    {!ready ? t('एडिटर लोड होत आहे…') : t(status)}
+                  </p>
+                  {savedAt && (
+                    <p className="m-0 text-sm text-emerald-950/80">
+                      <time dateTime={savedAt}>{t('शेवटचे जतन')}: {formatSavedAt(savedAt, lang)}</time>
+                    </p>
+                  )}
+                  <p className="m-0 text-sm text-emerald-950/80">
+                    {t('फाइलमधले बदल वेबसाइटवर सर्वांना दाखवण्यासाठी content.json प्रोजेक्टच्या public फोल्डरमध्ये ठेवून साइट पुन्हा प्रकाशित करा.')}
+                  </p>
+                </div>
                 </div>
               </fieldset>
-
-              <button
-                className={`${action} mt-4`}
-                type="button"
-                disabled={!ready || busy}
-                onClick={() => {
-                  onChange(initialContent);
-                  setStatus('मूळ मजकूर प्रिव्ह्यूमध्ये आला. तो ठेवण्यासाठी Save करा.');
-                }}
-              >
-                {t('मूळ मजकूर प्रिव्ह्यू करा')}
-              </button>
             </>
           )}
     </AdminLayout>

@@ -119,9 +119,10 @@ function memberLabel(member) {
   return `${member.name} · ${details.join(' · ')}`;
 }
 
+import { familyData } from './localFamily.js';
 async function requestFamily(method = 'GET', body) {
   try {
-    const response = await fetch('/api/admin/family', {
+    const response = await familyData({
       method,
       cache: 'no-store',
       headers: body ? { 'Content-Type': 'application/json' } : undefined,
@@ -521,8 +522,8 @@ function MemberDetails({ member, members, onBack, onOpen, onUpdate, onDelete, on
         }} /></label>
         <button className="family-button family-button-primary" disabled={saving}>{saving ? 'Saving…' : 'Save details'}</button>
       </form> : <dl className="family-detail-facts">
-        <div><dt>Profession</dt><dd>{member.profession || 'Not recorded'}</dd></div>
-        <div><dt>Notes</dt><dd>{member.notes || 'No notes yet.'}</dd></div>
+        <div><dt><i className="bi bi-briefcase" aria-hidden="true" /> Profession</dt><dd>{member.profession || 'Not recorded'}</dd></div>
+        <div><dt><i className="bi bi-journal-text" aria-hidden="true" /> Notes</dt><dd>{member.notes || 'No notes yet.'}</dd></div>
       </dl>}
       <section className="family-relationships" aria-labelledby="family-relations-title">
         <div className="family-panel-heading">
@@ -539,7 +540,7 @@ function MemberDetails({ member, members, onBack, onOpen, onUpdate, onDelete, on
           <button className="family-button family-button-primary" disabled={saving}>{saving ? 'Saving…' : 'Save parent links'}</button>
         </form> : <Parents member={member} members={members} />}
         {error && <p className="family-error" role="alert">{error}</p>}
-        <div className="family-relationship-group"><h4>Spouses</h4><div>
+        <div className="family-relationship-group member-spouses"><h4><i className="bi bi-heart" aria-hidden="true" /> Spouses</h4><div>
           {editing === 'spouse' ? <form className="family-spouse-form" onSubmit={saveSpouse}>
             <ParentPicker label="Spouse" members={members} value={spouseId} excludeId={member.id} onChange={setSpouseId} />
             <button className="family-button family-button-primary" disabled={saving || !spouseId}>{saving ? 'Saving…' : 'Add spouse relationship'}</button>
@@ -555,7 +556,7 @@ function MemberDetails({ member, members, onBack, onOpen, onUpdate, onDelete, on
             </div>
           </>}
         </div></div>
-        <div className="family-relationship-group"><h4>Children</h4>{children.length ? children.map((person) => <button key={person.id} type="button" onClick={() => onOpen(person.id)}>{person.name}</button>) : <p>No children linked</p>}</div>
+        <div className="family-relationship-group member-children"><h4><i className="bi bi-diagram-3" aria-hidden="true" /> Children</h4><div className="member-child-links">{children.length ? children.map((person) => <button key={person.id} type="button" onClick={() => onOpen(person.id)}>{person.name}</button>) : <p>No children linked</p>}</div></div>
       </section>
     </section>
   );
@@ -808,6 +809,33 @@ export default function FamilyManager({ view, selectedId, onSelectMember, onNavi
     }
   }
 
+  async function exportTreePng() {
+    const source = URL.createObjectURL(new Blob([familyTreeSvg(members, generations)], {type:'image/svg+xml'}));
+    try {
+      const image = new Image();
+      image.src = source;
+      await image.decode();
+      const width = image.naturalWidth * 2;
+      const height = image.naturalHeight * 2;
+      if (width * height > 48000000 || Math.max(width,height)>16384) throw new Error('This tree exceeds the PNG size limit. Use the vector SVG export for the full tree.');
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      context.fillStyle = '#ffffff';
+      context.fillRect(0,0,width,height);
+      context.drawImage(image,0,0,width,height);
+      const blob = await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+      if (!blob) throw new Error('PNG export failed. Try the SVG export.');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href=url; link.download='family-tree-2x.png'; link.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setFullscreenError('');
+    } catch(error) { setFullscreenError(error.message); }
+    finally { URL.revokeObjectURL(source); }
+  }
+
   async function toggleFullscreen() {
     try {
       if (document.fullscreenElement === viewport.current) await document.exitFullscreen();
@@ -908,6 +936,7 @@ export default function FamilyManager({ view, selectedId, onSelectMember, onNavi
                 <button className="family-button" type="button" onClick={() => void toggleFullscreen()}>{isFullscreen ? 'Exit full screen' : 'Full screen'}</button>
               </>}
               <button className="family-button" type="button" onClick={exportTreeImage}>Export image</button>
+              <button className="family-button" type="button" onClick={exportTreePng}>Download PNG (2×)</button>
               <button className="family-button" type="button" onClick={() => window.print()}>Print</button>
             </div>
           </div>

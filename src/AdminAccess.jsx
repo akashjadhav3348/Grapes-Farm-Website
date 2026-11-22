@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import Admin from './Admin.jsx';
+import { openLocalWorkspace, closeLocalWorkspace, isLocalWorkspace, leaveDeviceMode } from './localFamily.js';
 import './auth-theme.css';
 
 const api = '/api/admin';
 const REFRESH_MS = 60_000;
 
 export default function AdminAccess({ content, onChange, ready }) {
+  if (isLocalWorkspace() && location.pathname !== '/login') {
+    return <Admin content={content} onChange={onChange} ready={ready} lang="en" user={{name:'Device workspace'}} onLogout={closeLocalWorkspace} />;
+  }
+  return <HostedAccess content={content} onChange={onChange} ready={ready}/>;
+}
+
+function HostedAccess({ content, onChange, ready }) {
   const [user, setUser] = useState(null);
   const [pending, setPending] = useState(true);
   const [setup, setSetup] = useState(false);       // auth not configured on server
@@ -94,6 +102,7 @@ export default function AdminAccess({ content, onChange, ready }) {
       const result = await response.json().catch(() => null);
       if (!response.ok || result?.role !== 'admin') throw new Error('Sign in failed');
 
+      leaveDeviceMode();
       setPassword('');
 
       // CHANGE #6 — normalize the URL *before* mounting Admin so its
@@ -209,6 +218,9 @@ export default function AdminAccess({ content, onChange, ready }) {
             </p>
           )}
 
+          <hr/><h3>Device workspace</h3>
+          <p>Manage a separate copy on this browser without signing in. Anyone using this browser can access its saved records.</p>
+          <button type="button" className="admin-btn" onClick={openLocalWorkspace}>Open device workspace</button>
           <a className="login-home-link" href="/">← Back to Aishwary Farms</a>
         </section>
       </div>

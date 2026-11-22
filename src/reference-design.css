@@ -1,0 +1,130 @@
+#dashboard { --sidebar-bg:#142d52; --brand:#495bd4; --brand-dark:#3445ae; --accent:#218979; font-family:Inter,system-ui,sans-serif }
+#dashboard[data-theme="light"] {background:radial-gradient(ellipse at top right,#e9eafb,transparent 42rem),#f4f6fb;color:#19365e;--ink:#19365e}
+#dashboard .admin-sidebar {background:linear-gradient(155deg,#203961,#142d52 42%,#102746)!important}
+#dashboard #admin-sections .dashboard-nav-item[aria-pressed=true]{background:linear-gradient(110deg,#386bf1,#6555dd)!important;border-color:#7888f8}
+#dashboard .sidebar-logo,#dashboard .toolbar-avatar{background:linear-gradient(145deg,#7770ff,#4942d3);color:white}
+#dashboard .overview-hero::after {background:linear-gradient(110deg,rgba(56,69,166,.94),rgba(119,61,182,.88))}
+#dashboard .overview-kpi:nth-child(1){--kpi-accent:#3447ad;--kpi-surface:#e4eaff;--kpi-border:#b4c1fa}
+#dashboard .overview-kpi:nth-child(2){--kpi-accent:#7834ae;--kpi-surface:#efe1fa;--kpi-border:#d4b4ee}
+#dashboard .overview-kpi:nth-child(3){--kpi-accent:#146b58;--kpi-surface:#d8f2e9;--kpi-border:#9ed5c3}
+#dashboard .overview-kpi:nth-child(4){--kpi-accent:#92500c;--kpi-surface:#ffead1;--kpi-border:#efbf89}
+#dashboard .overview-kpi:nth-child(5){--kpi-accent:#385197;--kpi-surface:#e1ebfb;--kpi-border:#adbee8}
+#dashboard .overview-kpi:nth-child(6){--kpi-accent:#8a426f;--kpi-surface:#f6e3ef;--kpi-border:#ddbad2}
+#dashboard[data-theme="light"] .overview-kpi{background:linear-gradient(145deg,#fff,var(--kpi-surface));border-color:var(--kpi-border)}
+#dashboard[data-theme="light"] :is(.overview-welcome h1,.overview-card h2){color:#19365e}
+#dashboard[data-theme="light"] .overview-link {color:#4456bd}
+#dashboard .admin-btn.blue,#dashboard .editor-save-primary{background:linear-gradient(120deg,#3864db,#5a4cc9)!important;color:white!important;border-color:#5764ca}
+#dashboard[data-theme="light"] .dashboard-topbar{background:white!important;border-color:#e3eaf1}
+.dashboard-overview-main .overview-hero{justify-content:center;text-align:center;min-height:155px}
+.dashboard-overview-main .overview-hero::after{background:linear-gradient(0deg,#0b271e80,#0a281e38)}
+.dashboard-overview-main .overview-hero-copy h2{font:700 clamp(2rem,3vw,3rem)/1.15 Georgia,serif}
+.dashboard-overview-main .overview-hero-copy p{font-size:1rem;color:white;font-weight:600}
+.reference-charts{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:14px}
+.reference-charts h2{font-size:1.05rem;font-weight:700}.reference-charts p{font-size:.83rem;margin:8px 0}
+.public-site .farming-story{background:#faf8ef;border-radius:20px;padding:clamp(18px,4vw,50px)}
+.story-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.story-photos figure{margin:0;background:white;border-radius:14px;overflow:hidden}
+.story-photos img{width:100%;aspect-ratio:1.6;object-fit:cover}
+.story-photos figcaption{padding:14px}.story-photos p{margin:6px 0;font-size:.94rem}
+@media(max-width:900px){.reference-charts{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){.story-photos{grid-template-columns:1fr}}
+
+/* The same surfaces and field states are used in editors, dialogs and lists. */
+#dashboard {
+  --field-surface: #fff;
+  --field-edge: #b9c6df;
+  --table-band: #edf0fd;
+  --table-accent: #304879;
+  --table-hover: #f3f5ff;
+}
+#dashboard[data-theme="dark"] {
+  --field-surface: #182740;
+  --field-edge: #526585;
+  --table-band: #23344f;
+  --table-accent: #c5d3ff;
+  --table-hover: #25344a;
+}
+#dashboard .admin-page-content :is(input:not([type]),input[type="text"],input[type="search"],input[type="email"],input[type="tel"],input[type="date"],textarea,select),
+#dashboard dialog :is(input:not([type]),input[type="email"],input[type="tel"],select,textarea) {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--field-edge);
+  border-radius: 7px;
+  background: var(--field-surface);
+  color: var(--ink);
+  font-size: .9rem;
+}
+#dashboard .admin-page-content :is(input,select,textarea):focus-visible {
+  outline: 2px solid #606ad6;
+  outline-offset: 2px;
+}
+#dashboard :is(input[type="checkbox"],input[type="radio"]) { accent-color: #505ecd; }
+#dashboard .admin-page-content :is(.admin-table-scroll,.fa-table-scroll,.family-members-table-wrap) {
+  max-width: 100%; overflow-x: auto;
+  border: 1px solid var(--field-edge); border-radius: 10px;
+}
+#dashboard .admin-page-content table { width: 100%; border-collapse: collapse; }
+#dashboard .admin-page-content thead th {
+  padding: 10px 12px; background: var(--table-band); color: var(--table-accent);
+  font-size: .79rem; font-weight: 700; letter-spacing: .015em; text-transform: none;
+}
+#dashboard .admin-page-content tbody td { padding: 10px 12px; vertical-align: middle; border-bottom: 1px solid var(--border-soft); }
+#dashboard .admin-page-content tbody tr:hover { background: var(--table-hover); }
+#dashboard .directory-search { max-width: 26rem; margin: 14px 0; }
+.directory-person { display:flex; align-items:center; gap:9px; }
+.directory-person > span { display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:var(--table-band); color:var(--table-accent); font-weight:700; }
+#dashboard .directory-mobile { display:block; margin-top:3px; letter-spacing:normal; }
+#dashboard .task-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr)); padding:14px; align-items:end; border:1px solid var(--border-soft); border-radius:10px; background:var(--table-hover); }
+#dashboard .task-form label { min-width:0; }
+#dashboard #team-dialog-title {grid-column:1/-1;}
+#dashboard dialog[aria-labelledby="team-dialog-title"] form {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+#dashboard dialog[aria-labelledby="team-dialog-title"] :is(.quick-actions,[role="status"]) {grid-column:1/-1;margin:0;}
+@media(max-width:600px){#dashboard dialog[aria-labelledby="team-dialog-title"] form{grid-template-columns:minmax(0,1fr)}}
+
+#dashboard .family-member-details {
+  --periwinkle: #ebefff;
+  --lavender: #f1eafa;
+  --mint: #e0f4ec;
+  --peach: #fff0df;
+  --detail-line: #bec9df;
+}
+#dashboard[data-theme="dark"] .family-member-details {
+  --periwinkle: #23324e;
+  --lavender: #352d4c;
+  --mint: #203d37;
+  --peach: #413329;
+  --detail-line: #4d607a;
+}
+#dashboard .family-member-details .family-detail-hero {
+  padding: clamp(16px,3vw,28px);
+  margin-block: 14px;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at 100% 120%,#ffffff22 0 28%,transparent 29%),linear-gradient(115deg,#344894,#6549b9 75%,#7946ac);
+  box-shadow: inset 0 1px 0 #ffffff44;
+}
+#dashboard .family-member-details .family-detail-hero :is(h2,p) {color:white;margin-block:3px}
+#dashboard .family-member-details .family-detail-hero h2 {line-height:1.5}
+#dashboard .family-member-details .family-detail-hero > :is(img,span) {border:3px solid #cbc4ff;background:#fff0d6;color:#54408a}
+#dashboard .family-member-details :is(.family-detail-facts,.family-detail-relations) > div,
+#dashboard .family-member-details .family-relationship-group {border-color:var(--detail-line);padding:14px 16px;border-radius:11px}
+#dashboard .family-member-details .family-detail-facts > div:first-child,
+#dashboard .family-member-details .family-detail-relations > div:first-child {background:var(--periwinkle)}
+#dashboard .family-member-details .family-detail-facts > div:last-child,
+#dashboard .family-member-details .family-detail-relations > div:last-child {background:var(--lavender)}
+#dashboard .family-member-details .member-spouses {background:var(--peach)}
+#dashboard .family-member-details .member-children {background:var(--mint)}
+#dashboard .family-member-details :is(dt,h4) {font-size:.8rem;color:var(--ink)}
+#dashboard .family-member-details :is(dd,h4,p) {margin-bottom:0}
+#dashboard .family-member-details :is(.family-spouse-item,.member-child-links,.family-detail-actions) {display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#dashboard .family-member-details .family-spouse-item {margin-bottom:9px}
+#dashboard .family-member-details :is(.family-spouse-item,.member-child-links,.family-detail-actions) button {
+  margin:0;min-height:38px;padding:7px 12px;border:1px solid var(--detail-line);border-radius:8px;
+  background:var(--field-surface);color:var(--ink);line-height:1.45;overflow-wrap:anywhere;
+}
+#dashboard .family-member-details .family-detail-actions .family-button-primary {background:linear-gradient(115deg,#3d59c6,#6149b8);color:white;border-color:#5561bd}
+#dashboard .family-member-details :is(.family-button-danger,.family-spouse-item .family-text-button) {color:#983047;background:#fff1f3;border-color:#e6b9c2}
+@media(max-width:600px){
+  #dashboard .family-member-details .family-relationship-group {grid-template-columns:minmax(0,1fr);gap:8px}
+  #dashboard .family-member-details .family-detail-hero > :is(img,span) {width:54px;height:54px;flex-basis:54px}
+}

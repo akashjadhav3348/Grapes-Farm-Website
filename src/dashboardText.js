@@ -66,6 +66,7 @@ const toEnglish = new Map([
   ["मूळ मजकूर प्रिव्ह्यू करा", "Preview original content"],
   ["फोटो बदला", "Replace photo"],
   ["या ब्राउझरमध्ये बदल सेव्ह झाले.", "Changes saved in this browser."],
+  ["शेवटचे जतन", "Last saved"],
   ["content.json डाउनलोड सुरू आहे.", "Downloading content.json."],
   ["फाइल प्रिव्ह्यूमध्ये उघडली. बदल ठेवण्यासाठी Save करा.", "File opened in preview. Save to keep the changes."],
   ["मूळ मजकूर प्रिव्ह्यूमध्ये आला. तो ठेवण्यासाठी Save करा.", "Original content loaded. Save to keep it."],

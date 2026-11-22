@@ -15,8 +15,8 @@ export const initialContent = {
   version: 1,
   hero: {
     eyebrow: 'ऐश्वर्य फार्म्स · कुंभारी, महाराष्ट्र',
-    title: 'Rooted in',
-    accent: 'Kumbhari.',
+    title: 'आमची माती,',
+    accent: 'आमचा अभिमान',
     description: 'कुंभारीतली जाधव कुटुंबाची १० एकर शेती. आमच्या द्राक्षबागेची, इतर पिकांची आणि शेती सांभाळणाऱ्या कुटुंबाची ओळख.',
     image: 'farm/73.jpg',
     caption: 'ऐश्वर्य फार्म्सची द्राक्षबाग',
@@ -78,6 +78,7 @@ export function parseContent(value) {
     list(value.hero.acres, (item) => typeof item === 'string') &&
     strings(value.farm, ['title', 'description']) && media(value.farm.image) &&
     list(value.farm.varieties, (item) => typeof item === 'string') &&
+    (value.additionalFarms === undefined || list(value.additionalFarms, f => strings(f, ['id','name','village','description']) && typeof f.visible === 'boolean')) &&
     strings(value, ['cropTitle', 'familyTitle', 'galleryTitle', 'galleryDescription']) &&
     value.familyLabels && !Array.isArray(value.familyLabels) && typeof value.familyLabels === 'object' &&
     Object.entries(value.familyLabels).every(([name, label]) => familyNames.includes(name) && typeof label === 'string') &&
@@ -100,15 +101,32 @@ function database() {
   });
 }
 
-export async function browserContent(next) {
+export async function browserContent(next, savedAt) {
   const db = await database();
   try {
     return await new Promise((resolve, reject) => {
       const transaction = db.transaction('content', next ? 'readwrite' : 'readonly');
       const store = transaction.objectStore('content');
       const request = next ? store.put(next, 'current') : store.get('current');
+      if (next && savedAt) store.put(savedAt, 'savedAt');
       transaction.oncomplete = () => resolve(request.result);
       transaction.onabort = () => reject(transaction.error);
+      transaction.onerror = () => reject(transaction.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+export async function browserContentSavedAt() {
+  const db = await database();
+  try {
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction('content', 'readonly');
+      const request = transaction.objectStore('content').get('savedAt');
+      transaction.oncomplete = () => resolve(request.result);
+      transaction.onabort = () => reject(transaction.error);
+      transaction.onerror = () => reject(transaction.error);
     });
   } finally {
     db.close();
