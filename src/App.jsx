@@ -7,6 +7,8 @@ import Visit from './Visit.jsx';
 import { FarmingStory } from './FarmRegister.jsx';
 import './landing.css';
 import './reference-design.css';
+import './dashboard-reference.css';
+import './dashboard-forms.css';
 
 function isAdminPath(pathname = window.location.pathname, search = window.location.search) {
   const path = pathname.replace(/\/+$/, '') || '/';
@@ -141,10 +143,10 @@ function Crops({ title, crops }) {
         <div className="mt-7 grid grid-cols-1 gap-4 min-[366px]:grid-cols-2 min-[1001px]:grid-cols-4">
           {visible.map((crop) => (
             <article className="crop-card glass" key={crop.id}>
-              <figure>
+              {crop.photo && <figure>
                 <img src={photoSource(crop.photo)} alt={crop.alt} loading="lazy" />
                 {crop.illustrative && <figcaption>प्रातिनिधिक छायाचित्र</figcaption>}
-              </figure>
+              </figure>}
               <div className="crop-copy">
                 <p className="small-caps" lang="en">{crop.english}</p>
                 <h3>{crop.name}</h3>

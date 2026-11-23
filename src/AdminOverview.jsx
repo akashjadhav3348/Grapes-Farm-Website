@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { showDashboardToast } from './dashboardToast.js';
+import { showDashboardToast, confirmDashboardAction } from './dashboardToast.js';
 import { photoSource } from './content.js';
 import FamilyAnalytics from './FamilyAnalytics.jsx';
 import FarmTrend from './FarmTrend.jsx';
@@ -101,8 +101,8 @@ export default function AdminOverview({
   }).length + members.filter((member) => nextBirthdayWithinMonth(member.birthDate, today, monthEnd)).length;
   const taskStates = [
     { key: 'completed', label: 'Completed', color: '#188653', value: tasks.filter((task) => taskState(task, today) === 'completed').length },
-    { key: 'inProgress', label: 'In progress', color: '#dca23b', value: tasks.filter((task) => taskState(task, today) === 'inProgress').length },
-    { key: 'pending', label: 'Pending', color: '#5e9fe3', value: tasks.filter((task) => taskState(task, today) === 'pending').length },
+    { key: 'inProgress', label: 'In progress', color: '#1687ef', value: tasks.filter((task) => taskState(task, today) === 'inProgress').length },
+    { key: 'pending', label: 'Pending', color: '#f5a623', value: tasks.filter((task) => taskState(task, today) === 'pending').length },
     { key: 'overdue', label: 'Overdue', color: '#d65d56', value: tasks.filter((task) => taskState(task, today) === 'overdue').length },
   ];
   let cursor = 0;
@@ -180,7 +180,7 @@ export default function AdminOverview({
               ['gallery', 'Upload Photo', 'bi-cloud-arrow-up'],
               ['tasks', 'Create Task', 'bi-calendar-plus'],
               ['hero', 'Manage Homepage', 'bi-house-gear'],
-            ].map(([section, label, icon]) => <button key={section} type="button" onClick={() => navigate(section)}>
+            ].map(([section, label, icon]) => <button key={section} type="button" onClick={() => navigate(section, '', section === 'hero' ? '' : 'add')}>
               <i className={`bi ${icon}`} aria-hidden="true" /><span>{label}</span><i className="bi bi-arrow-up-right action-arrow" aria-hidden="true" />
             </button>)}
           </div>
@@ -197,12 +197,12 @@ export default function AdminOverview({
 
     <aside className="dashboard-overview-rail">
       <section className="overview-card overview-netlify">
-        <NetlifyActivity lang={lang} />
+        <NetlifyActivity lang={lang} compact onViewAll={() => navigate('activity')} />
       </section>
       <section className="overview-card overview-notifications">
         <div className="overview-card-heading"><div><span className="overview-eyebrow">WORKSPACE UPDATES</span><h2>Recent Notifications</h2></div><span className="notification-count">{unread.length}</span></div>
-        {unread.length ? <ul className="overview-notification-list">
-          {unread.slice(0, 5).map((item) => <li key={item.id}><span className="notification-unread-dot" /><div><strong>{item.text}</strong><time dateTime={item.time}>{relativeTime(item.time)}</time></div></li>)}
+        {activity.length ? <ul className="overview-notification-list">
+          {activity.slice(0, 5).map((item) => <li key={item.id}><span className="notification-unread-dot" style={item.read ? {background:'#a4b3ad'} : undefined} /><div><strong>{item.text}</strong><time dateTime={item.time}>{relativeTime(item.time)}</time></div></li>)}
         </ul> : <p className="overview-empty">You’re all caught up. New workspace notifications will appear here.</p>}
         <button type="button" className="overview-link" onClick={() => navigate('notifications')}>View all notifications <i className="bi bi-arrow-right" aria-hidden="true" /></button>
       </section>
@@ -273,10 +273,15 @@ export function TeamDirectory() {
       setMessage('That email already exists.');
       return;
     }
+    const mobile = String(fields.mobile ?? '').trim();
+    if (mobile && !/^[+\d ()-]{7,24}$/.test(mobile)) {
+      setMessage('Enter a valid mobile number.');
+      return;
+    }
 
     const next = editing
-      ? members.map((m) => (m.id === editing.id ? { ...m, ...fields, name, email, role } : m))
-      : [...members, { ...fields, name, email, role, id: crypto.randomUUID(), createdAt: new Date().toISOString() }];
+      ? members.map((m) => (m.id === editing.id ? { ...m, ...fields, name, email, role, mobile } : m))
+      : [...members, { ...fields, name, email, role, mobile, id: crypto.randomUUID(), createdAt: new Date().toISOString() }];
 
     if (persist(next)) dialog.current?.close();
   }
@@ -312,8 +317,8 @@ export function TeamDirectory() {
                   <button className="admin-btn" onClick={() => openEdit(m)}>Edit</button>{' '}
                   <button
                     className="admin-btn"
-                    onClick={() => {
-                      if (window.confirm(`Remove ${m.name} from the directory?`)) {
+                    onClick={async () => {
+                      if (await confirmDashboardAction(`Remove ${m.name} from the directory?`)) {
                         persist(members.filter((x) => x.id !== m.id));
                       }
                     }}

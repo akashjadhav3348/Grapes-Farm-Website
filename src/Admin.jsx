@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import AdminLayout from './AdminLayout.jsx';
+import CropCreate from './CropCreate.jsx';
+import { readMedia, videoTypes } from './mediaUpload.js';
 import { familyData } from './localFamily.js';
 import { FarmRegister } from './FarmRegister.jsx';
 import NetlifyActivity from './NetlifyActivity.jsx';
@@ -7,7 +9,7 @@ import AdminOverview, { PhotoDialog, TeamDirectory } from './AdminOverview.jsx';
 import { useWorkspace, WorkspacePage } from './AdminWorkspace.jsx';
 import FamilyManager, { generationsFor } from './FamilyManager.jsx';
 import { dashboardText } from './dashboardText.js';
-import { showDashboardToast } from './dashboardToast.js';
+import { showDashboardToast, confirmDashboardAction } from './dashboardToast.js';
 import {
   browserChannel, browserContent, browserContentSavedAt, contentFile, familyNames,
   initialContent, parseContent, photoTypes,
@@ -65,7 +67,7 @@ function sectionFromLocation() {
   return match ? match[0] : 'overview';
 }
 
-function Field({ label, value, onChange, multiline = false, className = '' }) {
+function Field({ label, value, onChange, multiline = false, className = '', required = false, type = 'text' }) {
   const Element = multiline ? 'textarea' : 'input';
   return (
     <label className={`grid min-w-0 gap-1.5 text-sm font-bold ${className}`}>
@@ -73,20 +75,28 @@ function Field({ label, value, onChange, multiline = false, className = '' }) {
       <Element
         className={input}
         rows={multiline ? 3 : undefined}
+        required={required}
+        type={multiline ? undefined : type}
+        min={type === 'number' ? 0 : undefined}
+        step={type === 'number' ? 'any' : undefined}
+        maxLength={multiline ? 5000 : 200}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          event.target.setCustomValidity(required && !event.target.value.trim() ? 'Enter a value.' : '');
+          onChange(event.target.value);
+        }}
       />
     </label>
   );
 }
 
-function Upload({ onUpload, multiple = false, label = 'फोटो बदला' }) {
+function Upload({ onUpload, multiple = false, label = 'फोटो बदला', allowVideo = false }) {
   return (
     <label className={`${action} cursor-pointer focus-within:outline-2`}>
       {label}
       <input
         type="file"
-        accept={accept}
+        accept={allowVideo ? [...photoTypes, ...videoTypes].join(',') : accept}
         multiple={multiple}
         className="sr-only"
         onChange={(event) => {
@@ -109,21 +119,12 @@ function Photo({ src, onUpload, label, alt = '' }) {
 }
 
 function Remove({ onClick, label = 'काढा' }) {
-  return <button className={`${action} text-rose-800`} type="button" onClick={onClick}>{label}</button>;
+  return <button className={`${action} text-rose-800`} type="button" onClick={async () => {
+    if (await confirmDashboardAction('Remove this item from the current draft? Save the editor to keep this change.')) onClick();
+  }}>{label}</button>;
 }
 
-function toDataURL(file) {
-  return new Promise((resolve, reject) => {
-    if (!photoTypes.includes(file.type) || file.size > 8 * 1024 * 1024) {
-      reject(new Error('JPG, PNG, WebP किंवा AVIF फोटो निवडा. प्रत्येक फोटो जास्तीत जास्त ८ MB.'));
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
+const toDataURL = file => readMedia(file);
 
 function replaceAt(items, index, value) {
   return items.map((item, position) => (position === index ? value : item));
@@ -244,15 +245,27 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
   }));
 
   /* CHANGE #3 — route paths sourced from ROUTES map */
-  function navigate(nextSection, memberId = '') {
+  function navigate(nextSection, memberId = '', action = '') {
     setSection(nextSection);
     setSelectedMemberId(nextSection === 'members' ? memberId : '');
     const path = ROUTES[nextSection] ?? '/admin';
     const query = nextSection === 'members' && memberId
       ? `?member=${encodeURIComponent(memberId)}`
-      : '';
+      : action ? '?action=' + encodeURIComponent(action) : '';
     window.history.pushState({ adminSection: nextSection }, '', `${path}${query}`);
   }
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get('action') !== 'add') return;
+    const target = section === 'crops' ? '#create-crop input'
+      : section === 'gallery' ? '#gallery-upload input'
+      : section === 'tasks' ? '.task-form input'
+      : section === 'farm' ? '.farm-register input' : '';
+    if (!target) return;
+    const field = document.querySelector(target);
+    field?.scrollIntoView({ block:'center' });
+    field?.focus({preventScroll:true});
+  }, [section]);
 
   useEffect(() => {
     function syncRoute() {
@@ -294,9 +307,19 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
     return perform(async () => update(await Promise.all(files.map(toDataURL))));
   }
 
+  function validatedContent() {
+    const controls = document.querySelectorAll('.admin-page-content > fieldset input, .admin-page-content > fieldset textarea');
+    for (const control of controls) {
+      if (!control.reportValidity()) throw new Error('Complete the highlighted field before saving.');
+    }
+    if (content.crops.some(crop => !crop.name.trim())) throw new Error('Every crop needs a name.');
+    if (content.gallery.some(group => !group.label.trim())) throw new Error('Every gallery group needs a name.');
+    return parseContent(content);
+  }
+
   async function storeInBrowser() {
     const timestamp = new Date().toISOString();
-    await browserContent(parseContent(content), timestamp);
+    await browserContent(validatedContent(), timestamp);
     setSavedAt(timestamp);
     if ('BroadcastChannel' in window) {
       const channel = new BroadcastChannel(browserChannel);
@@ -318,7 +341,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
 
   async function saveFolder() {
     const result = await perform(async () => {
-      const data = JSON.stringify(parseContent(content), null, 2);
+      const data = JSON.stringify(validatedContent(), null, 2);
       const directory = folder ?? await window.showDirectoryPicker({ mode: 'readwrite', id: 'aishwary-content' });
       const file = await directory.getFileHandle(contentFile, { create: true });
       const writer = await file.createWritable();
@@ -342,7 +365,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
   async function exportFile() {
     const result = await perform(async () => {
       const url = URL.createObjectURL(
-        new Blob([JSON.stringify(parseContent(content), null, 2)], { type: 'application/json' })
+        new Blob([JSON.stringify(validatedContent(), null, 2)], { type: 'application/json' })
       );
       const link = document.createElement('a');
       link.href = url;
@@ -478,6 +501,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                       label={t(label)}
                       value={content[section][key]}
                       multiline={key === 'description'}
+                      required={['title','description','address'].includes(key)}
                       className={section === 'hero' && key === 'description' ? 'homepage-field-span-all' : ''}
                       onChange={(value) => field(section, key, value)}
                     />
@@ -500,6 +524,8 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                           key={label}
                           label={t(label)}
                           value={content.hero.acres[index]}
+                          type="number"
+                          required
                           onChange={(value) => field('hero', 'acres', replaceAt(content.hero.acres, index, value))}
                         />
                       ))}
@@ -550,6 +576,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
 
                   {section === 'crops' && (
                     <>
+                      <CropCreate onCreate={crop => onChange(current => ({...current,crops:[...current.crops,crop]}))} />
                       <Field
                         label={t('पिके विभागाचे शीर्षक')}
                         value={content.cropTitle}
@@ -558,17 +585,11 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                       <div className="grid gap-3 xl:grid-cols-2">
                         {content.crops.map((crop, index) => (
                           <div className={`${card} grid gap-3`} key={crop.id}>
-                            <Field label={t('पिकाचे नाव')} value={crop.name} onChange={(name) => editCrop(index, { name })} />
+                            <Field required label={t('पिकाचे नाव')} value={crop.name} onChange={(name) => editCrop(index, { name })} />
                             <Field label={t('English name')} value={crop.english} onChange={(english) => editCrop(index, { english })} />
                             <Field label="Growing season" value={crop.season || ''} onChange={season => editCrop(index, { season })} />
                             <label><input type="checkbox" checked={crop.visible !== false} onChange={e => editCrop(index,{visible:e.target.checked})}/> Show crop on website</label>
                             <Field label={t('वर्णन')} multiline value={crop.description} onChange={(description) => editCrop(index, { description })} />
-                            <Field label={t('फोटोचे वर्णन')} value={crop.alt} onChange={(alt) => editCrop(index, { alt })} />
-                            <Photo
-                              label={t('फोटो बदला')}
-                              src={crop.photo}
-                              onUpload={(files) => upload(files, ([photo]) => editCrop(index, { photo, illustrative: false }))}
-                            />
                             <Remove
                               label={t('पीक काढा')}
                               onClick={() => set('crops', content.crops.filter((item) => item.id !== crop.id))}
@@ -576,15 +597,6 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                           </div>
                         ))}
                       </div>
-                      <Upload
-                        label={t('फोटोसह नवीन पीक जोडा')}
-                        onUpload={(files) => upload(files, ([photo]) => onChange((current) => ({
-                          ...current,
-                          crops: [...current.crops, {
-                            id: crypto.randomUUID(), name: '', english: '', alt: '', description: '', photo,
-                          }],
-                        })))}
-                      />
                     </>
                   )}
 
@@ -636,6 +648,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                         <>
                           <Field
                             label={t('गटाचे नाव')}
+                            required
                             value={group.label}
                             onChange={(label) => editGroup(groupIndex, (current) => ({ ...current, label }))}
                           />
@@ -645,19 +658,21 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                             onChange={(description) => editGroup(groupIndex, (current) => ({ ...current, description }))}
                           />
                           <div className="flex flex-wrap gap-2">
-                            <Upload
+                            <span id="gallery-upload"><Upload
                               multiple
-                              label={t('फोटो अपलोड करा')}
-                              onUpload={(files) => upload(files, (photos) => editGroup(groupIndex, (current) => ({
+                              allowVideo
+                              label="Upload photos / videos"
+                              onUpload={files => perform(async () => {
+                                const media = await Promise.all(files.map(async file => ({
+                                  id: crypto.randomUUID(), src: await readMedia(file, true),
+                                  thumb:'', caption:file.name, video:videoTypes.includes(file.type),
+                                })));
+                                editGroup(groupIndex, (current) => ({
                                 ...current,
-                                items: [
-                                  ...current.items,
-                                  ...photos.map((src) => ({
-                                    id: crypto.randomUUID(), src, thumb: '', caption: '', video: false,
-                                  })),
-                                ],
-                              })))}
-                            />
+                                items: [...current.items, ...media],
+                              }));
+                              })}
+                            /></span>
                             <Remove
                               label={t('गट काढा')}
                               onClick={() => set('gallery', content.gallery.filter((item) => item.id !== group.id))}
@@ -673,7 +688,7 @@ export default function Admin({ content, onChange, ready, lang, user, onLogout, 
                                   return {...current,items};
                                 })}>{step<0?'Move earlier':'Move later'}</button>)}</div>
                                 {item.video ? (
-                                  <p className="text-sm">{t('व्हिडिओ')} · {index + 1}</p>
+                                  <video src={item.src.startsWith('data:') ? item.src : `${import.meta.env.BASE_URL}assets/${item.src}`} controls preload="metadata" aria-label={item.caption || 'Video preview'} style={{width:'100%',maxHeight:220}} />
                                 ) : (
                                   <Photo
                                     label={t('फोटो बदला')}

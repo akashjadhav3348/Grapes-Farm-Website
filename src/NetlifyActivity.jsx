@@ -144,11 +144,11 @@ function MetricCard({ icon, label, value }) {
 }
 
 import { isLocalWorkspace } from './localFamily.js';
-export default function NetlifyActivity({ lang }) {
+export default function NetlifyActivity({ lang, compact = false, onViewAll }) {
   if (isLocalWorkspace()) return <section><h2>Netlify Activity</h2><p>Deployment information is available in the signed-in workspace.</p></section>;
-  return <HostedActivity lang={lang}/>;
+  return <HostedActivity lang={lang} compact={compact} onViewAll={onViewAll}/>;
 }
-function HostedActivity({ lang }) {
+function HostedActivity({ lang, compact, onViewAll }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [probe, setProbe] = useState(null);
@@ -255,6 +255,19 @@ function HostedActivity({ lang }) {
       value: probe == null ? '—' : `${probe} ms`,
     },
   ];
+
+  if (compact) {
+    const latest = data?.deploys?.[0];
+    return <section className="netlify-summary">
+      <div className="overview-card-heading"><h2><i className="bi bi-cloud" aria-hidden="true" /> Netlify Activity</h2><span className="role-badge">{loading ? 'Loading' : error ? 'Unavailable' : 'Connected'}</span></div>
+      {latest && <div className="netlify-latest"><strong>Latest deployment</strong><StatusPill state={latest.state} lang={lang}/><p>{latest.context || 'Deployment'}{latest.branch ? ' · ' + latest.branch : ''}</p><time dateTime={latest.created_at}>{formatDate(latest.created_at,lang)}</time></div>}
+      <div className="overview-card-heading"><h3>Recent deployments</h3><button className="overview-link" onClick={onViewAll}>View all</button></div>
+      {data?.deploys?.slice(0,3).map(row => <div className="netlify-deploy-row" key={row.id}><i className={`bi ${row.state === 'ready' ? 'bi-check-circle-fill' : row.state === 'error' ? 'bi-x-circle-fill' : 'bi-clock'}`} aria-hidden="true"/><div><strong>{row.context || 'Deployment'} {row.branch ? '(' + row.branch + ')' : ''}</strong><time dateTime={row.created_at}>{formatDate(row.created_at,lang)}</time></div><StatusPill state={row.state} lang={lang}/></div>)}
+      {!latest && <p className="overview-empty">{loading ? 'Checking deployment activity…' : error === 'telemetry_setup' ? 'Connect the existing secure Netlify integration to load deployments.' : error ? 'Deployment activity could not be loaded.' : 'No deployments recorded.'}</p>}
+      {error && latest && <p role="status">Refresh unavailable. Showing the last successful check.</p>}
+      <footer>{data?.checkedAt && <time dateTime={data.checkedAt}>Checked {relativeTime(data.checkedAt,lang)}</time>}<button className="admin-btn" onClick={() => void refresh()}>Refresh</button></footer>
+    </section>;
+  }
 
   if (error === 'telemetry_setup') {
     return (

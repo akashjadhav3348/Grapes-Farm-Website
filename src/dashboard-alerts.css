@@ -1,0 +1,30 @@
+.swal2-container.dashboard-swal-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  padding: 1rem !important;
+  background: transparent;
+  z-index: 2147483647;
+  isolation: isolate;
+}
+.swal2-container.dashboard-swal-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(14, 30, 38, .18);
+  backdrop-filter: blur(5px);
+  pointer-events: auto;
+}
+.swal2-container.dashboard-swal-layer .swal2-popup { pointer-events: auto; }
+.swal2-container.dashboard-swal-layer .swal2-toast {
+  width: min(380px, calc(100vw - 2rem)) !important;
+  border: 1px solid #d4e2d9;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px #173b3129;
+}

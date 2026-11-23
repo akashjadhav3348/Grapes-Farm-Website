@@ -217,11 +217,6 @@ function HostedAccess({ content, onChange, ready }) {
               Email or password is incorrect.
             </p>
           )}
-
-          <hr/><h3>Device workspace</h3>
-          <p>Manage a separate copy on this browser without signing in. Anyone using this browser can access its saved records.</p>
-          <button type="button" className="admin-btn" onClick={openLocalWorkspace}>Open device workspace</button>
-          <a className="login-home-link" href="/">← Back to Aishwary Farms</a>
         </section>
       </div>
     </main>

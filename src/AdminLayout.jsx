@@ -41,8 +41,8 @@ export function AdminSidebar({ open, collapsed, sections, active, onNavigate, on
     {open && <button className="dashboard-overlay lg:hidden" aria-label="Close navigation" onClick={onClose} />}
     <aside data-open={open} data-collapsed={collapsed} className="admin-sidebar">
       <div className="sidebar-brand">
-        <span aria-hidden="true" className="sidebar-logo">ऐ</span>
-        <div><strong>{t('ऐश्वर्य फार्म्स')}</strong><small>{t('Site administration')}</small></div>
+        <span aria-hidden="true" className="sidebar-logo"><i className="bi bi-flower1" /></span>
+        <div><strong>{t('ऐश्वर्य फार्म्स')}</strong><small>Admin panel</small></div>
         <button className="sidebar-close lg:hidden" type="button" aria-label="Close menu" onClick={onClose}><i className="bi bi-x-lg" /></button>
       </div>
       <nav id="admin-sections" className="sidebar-navigation" aria-label={t('एडिटरचे विभाग')}>
@@ -117,7 +117,7 @@ export function AdminTopbar({
     </label>
     <div className="dashboard-toolbar">
       <span className="toolbar-language" aria-label="Current language: English">
-        <i className="bi bi-globe2" aria-hidden="true" /><span>English</span><i className="bi bi-chevron-down" aria-hidden="true" />
+        <i className="bi bi-globe2" aria-hidden="true" /><span>English</span>
       </span>
       <button className="toolbar-circle" type="button" aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : 'Notifications'} onClick={() => navigate('notifications')}>
         <i className="bi bi-bell" />{unreadCount > 0 && <span className="unread-dot" aria-hidden="true" />}

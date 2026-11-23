@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { showDashboardToast } from './dashboardToast.js';
+import { showDashboardToast, confirmDashboardAction } from './dashboardToast.js';
 import './family-admin.css';
 
 const emptyFields = {
@@ -482,7 +482,7 @@ function MemberDetails({ member, members, onBack, onOpen, onUpdate, onDelete, on
   }
 
   async function removeMember() {
-    if (!window.confirm(`Delete ${member.name}? Parent and spouse links to this member will be removed.`)) return;
+    if (!await confirmDashboardAction(`Delete ${member.name}? Parent and spouse links to this member will be removed.`)) return;
     setSaving(true);
     setError('');
     try {
@@ -590,7 +590,7 @@ export default function FamilyManager({ view, selectedId, onSelectMember, onNavi
   const [genderFilter, setGenderFilter] = useState('all');
   const [memberSort, setMemberSort] = useState({ key: 'name', direction: 'asc' });
   const [memberPage, setMemberPage] = useState(1);
-  const [addOpen, setAddOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(() => new URLSearchParams(location.search).get('action') === 'add');
   const [initialParentId, setInitialParentId] = useState('');
   const [initialGender, setInitialGender] = useState('unknown');
   const [relationTarget, setRelationTarget] = useState(null);
@@ -663,6 +663,11 @@ export default function FamilyManager({ view, selectedId, onSelectMember, onNavi
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const channel = new BroadcastChannel('aishwary-family');
+    channel.onmessage = () => void load();
+    return () => channel.close();
+  }, [load]);
 
   useEffect(() => {
     function syncFullscreen() {

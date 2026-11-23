@@ -1,0 +1,56 @@
+#dashboard .admin-page-content :is(form,.homepage-editor-form) {
+  --form-label: #294c3c;
+  --form-surface: #f6faf8;
+}
+#dashboard[data-theme="dark"] .admin-page-content :is(form,.homepage-editor-form) {
+  --form-label: #d9eade;
+  --form-surface: #1c3029;
+}
+#dashboard .admin-page-content label:not(:has([type="checkbox"])) {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: var(--form-label,var(--ink));
+  font-size: .875rem;
+  line-height: 1.5;
+}
+#dashboard .admin-page-content :is(form,.homepage-editor-form) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),select,textarea) {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid var(--field-edge);
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--field-surface);
+  color: var(--ink);
+  font: inherit;
+}
+#dashboard .admin-page-content :is(input,select,textarea):user-invalid {
+  border-color: #c94752 !important;
+  box-shadow: 0 0 0 2px #c9475218;
+}
+#dashboard .admin-page-content input[type="file"] {
+  max-width: 100%;
+  padding: 10px;
+  border: 1px dashed var(--field-edge);
+  border-radius: 8px;
+  font-size: .82rem;
+}
+#dashboard .admin-page-content input[type="file"].sr-only { padding: 0; }
+#dashboard .admin-page-content .task-form,
+#dashboard .admin-page-content .profile-form {
+  padding: 18px;
+  border: 1px solid var(--field-edge);
+  border-radius: 12px;
+  background: var(--form-surface);
+}
+#dashboard .admin-page-content .profile-form { display:grid;gap:14px;max-width:720px; }
+#dashboard .admin-page-content :is(table.admin-table,table.family-members-table,.fa-directory table) { font-size:.875rem; }
+#dashboard .admin-page-content :is(table.admin-table,table.family-members-table,.fa-directory table) th { font-size:.8rem; padding:12px; }
+#dashboard .admin-page-content :is(table.admin-table,table.family-members-table,.fa-directory table) td { padding:12px;line-height:1.6; }
+#dashboard .admin-page-content :is(.family-detail-form,.family-spouse-form) {
+  padding:16px;border:1px solid var(--field-edge);border-radius:10px;background:var(--form-surface);
+}
+@media(max-width:600px){
+  #dashboard .admin-page-content .task-form,#dashboard .admin-page-content .profile-form{padding:12px}
+}

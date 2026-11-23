@@ -64,10 +64,10 @@ function list(value, test) {
   return Array.isArray(value) && value.every(test);
 }
 
-function media(value) {
+function media(value, video = false) {
   return typeof value === 'string' && (
-    /^(?:farm|thumb|crops)\/[\w.-]+\.(?:jpe?g|png|webp|avif|mp4)$/i.test(value) ||
-    /^data:image\/(?:jpeg|png|webp|avif);base64,[a-z0-9+/]+=*$/i.test(value)
+    (video ? /^(?:farm|thumb|crops)\/[\w.-]+\.(?:mp4|webm)$/i : /^(?:farm|thumb|crops)\/[\w.-]+\.(?:jpe?g|png|webp|avif)$/i).test(value) ||
+    (video ? /^data:video\/(?:mp4|webm);base64,[a-z0-9+/]+=*$/i : /^data:image\/(?:jpeg|png|webp|avif);base64,[a-z0-9+/]+=*$/i).test(value)
   );
 }
 
@@ -82,10 +82,10 @@ export function parseContent(value) {
     strings(value, ['cropTitle', 'familyTitle', 'galleryTitle', 'galleryDescription']) &&
     value.familyLabels && !Array.isArray(value.familyLabels) && typeof value.familyLabels === 'object' &&
     Object.entries(value.familyLabels).every(([name, label]) => familyNames.includes(name) && typeof label === 'string') &&
-    list(value.crops, (crop) => strings(crop, ['id', 'name', 'english', 'alt', 'description']) && media(crop.photo)) &&
+    list(value.crops, (crop) => strings(crop, ['id', 'name', 'english', 'alt', 'description']) && (crop.photo === '' || media(crop.photo))) &&
     list(value.gallery, (group) => strings(group, ['id', 'label', 'description']) &&
       list(group.items, (item) => strings(item, ['id', 'caption']) && typeof item.video === 'boolean' &&
-        media(item.src) && (!item.thumb || media(item.thumb)))) &&
+        media(item.src, item.video) && (!item.thumb || media(item.thumb)))) &&
     strings(value.visit, ['title', 'address', 'description', 'security']) &&
     list(value.visit.phones, (phone) => typeof phone === 'string' && (!phone.trim() || /^[+\d ()-]{3,24}$/.test(phone)));
   if (!valid) throw new Error('Invalid Aishwary Farms content.json');

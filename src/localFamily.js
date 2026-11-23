@@ -32,7 +32,7 @@ async function transaction(write, operation) {
       request.onsuccess = () => {
         try {
           const family = validateFamily(request.result ?? structuredClone(seed));
-          result = operation(family);
+          result = operation(family, request.result !== undefined);
           if (write) store.put(validateFamily(result.family), 'family-v1');
         } catch (error) { tx.abort(); reject(error); }
       };
@@ -40,8 +40,27 @@ async function transaction(write, operation) {
   } finally { db.close(); }
 }
 
+let initialization;
+async function initializeFamily() {
+  if (!initialization) {
+    initialization = (async () => {
+      const exists = await transaction(false, (_family, stored) => stored);
+      if (exists) return;
+      let family = structuredClone(seed);
+      if (!isLocalWorkspace()) {
+        // Import the existing authorized records once before switching to device storage.
+        const response = await fetch('/api/admin/family', {cache:'no-store'});
+        if (!response.ok) throw new Error('Existing family records could not be loaded. Retry before editing.');
+        family = validateFamily(await response.json());
+      }
+      await transaction(true, (current, stored) => ({family: stored ? current : family}));
+    })().catch(error => { initialization = undefined; throw error; });
+  }
+  await initialization;
+}
+
 export async function familyData(options = {}) {
-  if (!isLocalWorkspace()) return fetch('/api/admin/family', options);
+  await initializeFamily();
   const method = options.method || 'GET';
   const body = options.body ? JSON.parse(options.body) : {};
   const result = await transaction(method !== 'GET', family => {
@@ -56,10 +75,14 @@ export async function familyData(options = {}) {
     else throw new Error('Unsupported family operation.');
     return { family, member: family.members.find(person => person.id === id), deletedMember };
   });
+  if (method !== 'GET') {
+    const channel = new BroadcastChannel('aishwary-family');
+    channel.postMessage('updated');
+    channel.close();
+  }
   return Response.json(result);
 }
 
 export async function restoreDeviceFamily(family) {
-  if (!isLocalWorkspace()) throw new Error('Open the device workspace first.');
   await transaction(true, () => ({family:validateFamily(family)}));
 }

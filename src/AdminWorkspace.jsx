@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { showDashboardToast } from './dashboardToast.js';
+import { showDashboardToast, confirmDashboardAction } from './dashboardToast.js';
 import FamilyBackup from './FamilyBackup.jsx';
 
 /* CHANGE #1 — constants */
@@ -156,6 +156,7 @@ function SettingsPanel({workspace}) {
 }
 
 function ProfileForm({ data, save }) {
+  const [error,setError] = useState('');
   const initial = data.profile?.name?.slice(0, 1).toUpperCase() || 'A';
 
   function submit(event) {
@@ -163,7 +164,8 @@ function ProfileForm({ data, save }) {
     const form = new FormData(event.currentTarget);
     const name = String(form.get('name') ?? '').trim();
     const bio = String(form.get('bio') ?? '').trim();
-    if (!name) return;
+    if (!name) { setError('Enter your display name.'); return; }
+    setError('');
     save({ profile: { name, bio } }, 'Profile updated');
   }
 
@@ -178,6 +180,7 @@ function ProfileForm({ data, save }) {
         About you
         <textarea name="bio" maxLength={500} defaultValue={data.profile?.bio ?? ''} />
       </label>
+      {error && <p role="alert">{error}</p>}
       <button className="admin-btn blue" type="submit">Save profile</button>
       <p>Display settings do not change your login credentials.</p>
     </form>
@@ -185,14 +188,16 @@ function ProfileForm({ data, save }) {
 }
 
 function TasksPanel({ data, save }) {
+  const [error,setError] = useState('');
   function addTask(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const title = String(form.get('title') ?? '').trim();
     const date = String(form.get('date') ?? '');
-    if (!title || !date) return;
+    if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { setError('Enter a task title and valid due date.'); return; }
+    setError('');
     const saved = save(
-      { tasks: [...data.tasks, { id: newId(), title, date, done: false, priority:form.get('priority'), assignee:String(form.get('assignee') || '').trim() }] },
+      { tasks: [...data.tasks, { id: newId(), title, date, done: form.get('status') === 'completed', status:form.get('status'), priority:form.get('priority'), assignee:String(form.get('assignee') || '').trim() }] },
       'New farm task added'
     );
     if (saved) event.currentTarget.reset();
@@ -200,6 +205,7 @@ function TasksPanel({ data, save }) {
 
   return (
     <>
+      {error && <p role="alert">{error}</p>}
       <form className="task-form" onSubmit={addTask}>
         <label>
           Task
@@ -211,6 +217,7 @@ function TasksPanel({ data, save }) {
         </label>
         <label>Assigned to<input name="assignee" maxLength={100} placeholder="Optional name"/></label>
         <label>Priority<select name="priority" defaultValue="Normal"><option>Low</option><option>Normal</option><option>High</option></select></label>
+        <label>Status<select name="status" defaultValue="pending"><option value="pending">Pending</option><option value="in-progress">In progress</option><option value="completed">Completed</option></select></label>
         <button className="admin-btn blue" type="submit">Add task</button>
       </form>
 
@@ -218,7 +225,7 @@ function TasksPanel({ data, save }) {
         <table className="admin-table">
           <caption className="sr-only">Farm tasks</caption>
           <thead>
-            <tr><th>Completed</th><th>Task</th><th>Assigned to</th><th>Priority</th><th>Due date</th><th>Action</th></tr>
+            <tr><th>Completed</th><th>Task</th><th>Assigned to</th><th>Priority</th><th>Status</th><th>Due date</th><th>Action</th></tr>
           </thead>
           <tbody>
             {data.tasks.map((task) => (
@@ -229,20 +236,24 @@ function TasksPanel({ data, save }) {
                     checked={task.done}
                     aria-label={task.done ? `Mark "${task.title}" incomplete` : `Mark "${task.title}" complete`}
                     onChange={() => save(
-                      { tasks: data.tasks.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t)) },
+                      { tasks: data.tasks.map((t) => (t.id === task.id ? { ...t, done: !t.done, status:!t.done ? 'completed' : 'pending' } : t)) },
                       task.done ? `Task reopened: ${task.title}` : `Task completed: ${task.title}`
                     )}
                   />
                 </td>
                 <td>{task.title}</td>
                 <td>{task.assignee || 'Unassigned'}</td><td><span className="role-badge">{task.priority || 'Normal'}</span></td>
+                <td><select aria-label={`Status for ${task.title}`} value={task.done ? 'completed' : task.status === 'in-progress' ? 'in-progress' : 'pending'} onChange={event => {
+                  const status = event.target.value;
+                  save({tasks:data.tasks.map(item => item.id === task.id ? {...item,status,done:status === 'completed'} : item)}, 'Task status updated');
+                }}><option value="pending">Pending</option><option value="in-progress">In progress</option><option value="completed">Completed</option></select></td>
                 <td>{task.date}</td>
                 <td>
                   <button
                     className="admin-btn"
                     type="button"
-                    onClick={() => {
-                      if (window.confirm(`Delete "${task.title}"?`)) {
+                    onClick={async () => {
+                      if (await confirmDashboardAction(`Delete "${task.title}"?`)) {
                         save({ tasks: data.tasks.filter((t) => t.id !== task.id) }, 'Task removed');
                       }
                     }}
