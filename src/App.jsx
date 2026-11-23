@@ -23,7 +23,7 @@ function Kicker({ children }) {
 function Brand() {
   return (
     <a className="brand" href="#top" aria-label="Aishwary Farms मुख्यपृष्ठ">
-      <img src="../dist/Logo/Aishwary.png" style={{ width: '150px' }} alt="Aishwary Farms" />
+      <img src="/assets/Logo/Aishwary.png" style={{ width: '150px' }} alt="Aishwary Farms" />
     </a>
   );
 }
